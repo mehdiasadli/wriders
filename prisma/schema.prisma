@@ -1,0 +1,298 @@
+// A book writing and wiki (for that book) application database model
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum UserRole {
+  USER
+  AUTHOR
+  EDITOR
+  ADMIN
+}
+
+enum ContentStatus {
+  DRAFT
+  SOON
+  ARCHIVED
+  PUBLISHED
+}
+
+enum AppearanceType {
+  MENTION
+  APPEARANCE
+  POV
+}
+
+enum NotificationType {
+  NEW_CHAPTER
+  WIKI_UPDATE
+  NEW_COMMENT
+}
+
+enum BookVisibility {
+  PRIVATE
+  PUBLIC
+}
+
+model User {
+  id        String     @id @default(uuid())
+  email     String     @unique
+  slug      String     @unique
+  name      String
+  password  String
+  roles     UserRole[] @default([USER])
+  createdAt DateTime   @default(now())
+  updatedAt DateTime   @updatedAt
+
+  wpm Int @default(238)
+
+  booksAuthored      Book[]
+  charactersCreated  Character[]
+  notifications      Notification[]
+  comments           Comment[]
+  reads              ChapterRead[]
+  wikiPages          WikiPage[]
+  following          BookFollow[]
+  favoriteBooks      FavoriteBook[]
+  favoriteChapters   FavoriteChapter[]
+  favoriteCharacters FavoriteCharacter[]
+
+  @@index([email])
+  @@index([slug])
+  @@index([roles])
+  @@index([name])
+  @@map("users")
+}
+
+model Series {
+  id        String   @id @default(uuid())
+  slug      String   @unique
+  title     String
+  synopsis  String?
+  createdAt DateTime @default(now())
+
+  books Book[]
+
+  @@index([slug])
+  @@map("series")
+}
+
+model Book {
+  id          String         @id @default(uuid())
+  slug        String         @unique
+  title       String
+  synopsis    String?
+  status      ContentStatus  @default(DRAFT)
+  visibility  BookVisibility @default(PRIVATE)
+  publishedAt DateTime?
+  createdAt   DateTime       @default(now())
+  updatedAt   DateTime       @updatedAt
+
+  authorId String
+  author   User   @relation(fields: [authorId], references: [id], onDelete: Cascade)
+
+  seriesId      String?
+  series        Series?         @relation(fields: [seriesId], references: [id], onDelete: SetNull)
+  orderInSeries Int?
+  chapters      Chapter[]
+  characters    BookCharacter[]
+  wikiPages     BookWikiPage[]
+  followers     BookFollow[]
+  favoritedBy   FavoriteBook[]
+
+  @@unique([seriesId, orderInSeries])
+  @@index([slug])
+  @@index([status])
+  @@index([publishedAt])
+  @@index([authorId])
+  @@map("books")
+}
+
+model BookFollow {
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  bookId    String
+  book      Book     @relation(fields: [bookId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
+
+  @@id([userId, bookId])
+  @@map("book_follows")
+}
+
+model FavoriteBook {
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  bookId    String
+  book      Book     @relation(fields: [bookId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
+
+  @@id([userId, bookId])
+  @@map("favorite_books")
+}
+
+// NEW: For Favoriting Chapters
+model FavoriteChapter {
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  chapterId String
+  chapter   Chapter  @relation(fields: [chapterId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
+
+  @@id([userId, chapterId])
+  @@map("favorite_chapters")
+}
+
+// NEW: For Favoriting Characters
+model FavoriteCharacter {
+  userId      String
+  user        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  characterId String
+  character   Character @relation(fields: [characterId], references: [id], onDelete: Cascade)
+  createdAt   DateTime  @default(now())
+
+  @@id([userId, characterId])
+  @@map("favorite_characters")
+}
+
+model Chapter {
+  id          String        @id @default(uuid())
+  slug        String        @unique
+  title       String
+  order       Int
+  synopsis    String?
+  status      ContentStatus @default(DRAFT)
+  publishedAt DateTime?
+  content     String        @db.Text
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
+
+  bookId      String
+  book        Book               @relation(fields: [bookId], references: [id], onDelete: Cascade)
+  characters  ChapterCharacter[]
+  comments    Comment[]
+  reads       ChapterRead[]
+  favoritedBy FavoriteChapter[]
+
+  @@unique([bookId, order])
+  @@index([slug])
+}
+
+model Character {
+  id          String   @id @default(uuid())
+  slug        String   @unique
+  fullName    String?
+  description String?
+  aliases     String[]
+  bio         String?  @db.Text
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  creatorId   String?
+  creator     User?               @relation(fields: [creatorId], references: [id], onDelete: SetNull)
+  books       BookCharacter[]
+  chapters    ChapterCharacter[]
+  favoritedBy FavoriteCharacter[]
+
+  @@index([slug])
+  @@map("characters")
+}
+
+model BookCharacter {
+  bookId      String
+  book        Book      @relation(fields: [bookId], references: [id], onDelete: Cascade)
+  characterId String
+  character   Character @relation(fields: [characterId], references: [id], onDelete: Cascade)
+
+  @@id([bookId, characterId])
+}
+
+model BookWikiPage {
+  bookId     String
+  book       Book     @relation(fields: [bookId], references: [id], onDelete: Cascade)
+  wikiPageId String
+  wikiPage   WikiPage @relation(fields: [wikiPageId], references: [id], onDelete: Cascade)
+
+  @@id([bookId, wikiPageId])
+}
+
+model ChapterCharacter {
+  chapterId      String
+  chapter        Chapter        @relation(fields: [chapterId], references: [id], onDelete: Cascade)
+  characterId    String
+  character      Character      @relation(fields: [characterId], references: [id], onDelete: Cascade)
+  appearanceType AppearanceType @default(APPEARANCE)
+
+  @@id([chapterId, characterId])
+  @@map("chapter_characters")
+}
+
+model Comment {
+  id        String   @id @default(uuid())
+  slug      String   @unique
+  content   String   @db.Text
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  depth Int @default(1)
+
+  authorId  String
+  author    User      @relation(fields: [authorId], references: [id], onDelete: Cascade)
+  chapterId String
+  chapter   Chapter   @relation(fields: [chapterId], references: [id], onDelete: Cascade)
+  parentId  String?
+  parent    Comment?  @relation("Thread", fields: [parentId], references: [id], onDelete: Cascade)
+  replies   Comment[] @relation("Thread")
+
+  @@index([authorId])
+  @@index([chapterId])
+  @@map("comments")
+}
+
+model ChapterRead {
+  chapterId String
+  chapter   Chapter  @relation(fields: [chapterId], references: [id], onDelete: Cascade)
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  readAt    DateTime @default(now())
+
+  @@id([chapterId, userId])
+  @@map("chapter_reads")
+}
+
+model WikiPage {
+  id          String    @id @default(uuid())
+  slug        String    @unique
+  title       String
+  content     String    @db.Text
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  publishedAt DateTime?
+
+  authorId String
+  author   User           @relation(fields: [authorId], references: [id], onDelete: Cascade)
+  books    BookWikiPage[]
+
+  @@index([slug])
+  @@map("wiki_pages")
+}
+
+model Notification {
+  id        String           @id @default(uuid())
+  type      NotificationType
+  isRead    Boolean          @default(false)
+  createdAt DateTime         @default(now())
+
+  recipientId String
+  recipient   User    @relation(fields: [recipientId], references: [id], onDelete: Cascade)
+  bookId      String?
+  chapterId   String?
+
+  @@index([recipientId])
+  @@map("notifications")
+}
