@@ -1,10 +1,12 @@
 'use client';
 
 import { NavUser } from '@/components/nav-user';
+import { useSession } from 'next-auth/react';
 import Link from 'next/link';
 import { useState } from 'react';
 
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
+  const { data: session } = useSession();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
   return (
@@ -28,12 +30,16 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
               <Link href='/' className='text-sm text-gray-600 hover:text-gray-900 transition-colors'>
                 Home
               </Link>
-              <Link href='/books' className='text-sm text-gray-600 hover:text-gray-900 transition-colors'>
-                Books
-              </Link>
-              <Link href='/explore' className='text-sm text-gray-600 hover:text-gray-900 transition-colors'>
-                Explore
-              </Link>
+              {session && (
+                <>
+                  <Link href='/books' className='text-sm text-gray-600 hover:text-gray-900 transition-colors'>
+                    Books
+                  </Link>
+                  <Link href='/explore' className='text-sm text-gray-600 hover:text-gray-900 transition-colors'>
+                    Explore
+                  </Link>
+                </>
+              )}
             </nav>
           </div>
 
@@ -69,20 +75,24 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
               >
                 Home
               </Link>
-              <Link
-                href='/books'
-                className='text-sm text-gray-600 hover:text-gray-900 transition-colors'
-                onClick={() => setIsMobileMenuOpen(false)}
-              >
-                Books
-              </Link>
-              <Link
-                href='/explore'
-                className='text-sm text-gray-600 hover:text-gray-900 transition-colors'
-                onClick={() => setIsMobileMenuOpen(false)}
-              >
-                Explore
-              </Link>
+              {session && (
+                <>
+                  <Link
+                    href='/books'
+                    className='text-sm text-gray-600 hover:text-gray-900 transition-colors'
+                    onClick={() => setIsMobileMenuOpen(false)}
+                  >
+                    Books
+                  </Link>
+                  <Link
+                    href='/explore'
+                    className='text-sm text-gray-600 hover:text-gray-900 transition-colors'
+                    onClick={() => setIsMobileMenuOpen(false)}
+                  >
+                    Explore
+                  </Link>
+                </>
+              )}
             </nav>
           </div>
         )}
