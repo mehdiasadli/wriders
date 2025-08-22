@@ -60,7 +60,6 @@ export function EditChapterContentForm({ chapter, bookSlug }: EditChapterContent
           >
             ← {chapter.title}
           </Link>
-          <div className='text-sm text-gray-500'>Editing content</div>
         </div>
 
         <div className='flex items-center gap-4'>
