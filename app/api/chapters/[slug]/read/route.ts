@@ -2,9 +2,9 @@ import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { auth } from '@/lib/auth';
 
-export async function POST(request: NextRequest, { params }: { params: { slug: string } }) {
+export async function POST(request: NextRequest, { params }: { params: Promise<{ slug: string }> }) {
   try {
-    const { slug } = params;
+    const { slug } = await params;
     const session = await auth();
 
     if (!session?.user?.id) {
@@ -71,9 +71,9 @@ export async function POST(request: NextRequest, { params }: { params: { slug: s
   }
 }
 
-export async function GET(request: NextRequest, { params }: { params: { slug: string } }) {
+export async function GET(request: NextRequest, { params }: { params: Promise<{ slug: string }> }) {
   try {
-    const { slug } = params;
+    const { slug } = await params;
     const session = await auth();
 
     if (!session?.user?.id) {

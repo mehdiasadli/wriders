@@ -3,9 +3,9 @@ import { prisma } from '@/lib/prisma';
 import { auth } from '@/lib/auth';
 import { createCommentSchema } from '@/schemas/comments.schema';
 
-export async function GET(request: NextRequest, { params }: { params: { slug: string } }) {
+export async function GET(request: NextRequest, { params }: { params: Promise<{ slug: string }> }) {
   try {
-    const { slug } = params;
+    const { slug } = await params;
 
     // Get the chapter to check access
     const chapter = await prisma.chapter.findUnique({
@@ -114,9 +114,9 @@ export async function GET(request: NextRequest, { params }: { params: { slug: st
   }
 }
 
-export async function POST(request: NextRequest, { params }: { params: { slug: string } }) {
+export async function POST(request: NextRequest, { params }: { params: Promise<{ slug: string }> }) {
   try {
-    const { slug } = params;
+    const { slug } = await params;
     const session = await auth();
 
     if (!session?.user?.id) {

@@ -3,10 +3,11 @@ import { findCharacterBySlugSchema } from '@/schemas';
 import { createSuccessResponse, createErrorResponse } from '@/lib/api-response';
 import { prisma } from '@/lib/prisma';
 
-export async function DELETE(request: NextRequest, { params }: { params: { slug: string } }) {
+export async function DELETE(request: NextRequest, { params }: { params: Promise<{ slug: string }> }) {
   try {
+    const { slug } = await params;
     // Validate slug parameter
-    const slugValidation = findCharacterBySlugSchema.safeParse({ slug: params.slug });
+    const slugValidation = findCharacterBySlugSchema.safeParse({ slug });
     if (!slugValidation.success) {
       return NextResponse.json(createErrorResponse('Invalid character slug', 400), { status: 400 });
     }
@@ -16,7 +17,7 @@ export async function DELETE(request: NextRequest, { params }: { params: { slug:
 
     // Check if character exists and user has permission
     const existingCharacter = await prisma.character.findUnique({
-      where: { slug: params.slug },
+      where: { slug },
     });
 
     if (!existingCharacter) {
@@ -31,7 +32,7 @@ export async function DELETE(request: NextRequest, { params }: { params: { slug:
 
     // Delete character
     await prisma.character.delete({
-      where: { slug: params.slug },
+      where: { slug },
     });
 
     return NextResponse.json(createSuccessResponse(null, 'Character deleted successfully'), { status: 200 });

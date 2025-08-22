@@ -109,7 +109,6 @@ export async function generateMetadata({
   const readingTime = calculateReadingTime(wordCount, 238); // Default WPM
   const readCount = chapter._count.reads;
   const commentCount = chapter._count.comments;
-  const favoriteCount = chapter._count.favoritedBy;
 
   const description =
     chapter.synopsis ||

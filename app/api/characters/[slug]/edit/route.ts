@@ -3,12 +3,13 @@ import { updateCharacterSchema, findCharacterBySlugSchema } from '@/schemas';
 import { createSuccessResponse, createErrorResponse } from '@/lib/api-response';
 import { prisma } from '@/lib/prisma';
 
-export async function PUT(request: NextRequest, { params }: { params: { slug: string } }) {
+export async function PUT(request: NextRequest, { params }: { params: Promise<{ slug: string }> }) {
   try {
+    const { slug } = await params;
     const body = await request.json();
 
     // Validate slug parameter
-    const slugValidation = findCharacterBySlugSchema.safeParse({ slug: params.slug });
+    const slugValidation = findCharacterBySlugSchema.safeParse({ slug });
     if (!slugValidation.success) {
       return NextResponse.json(createErrorResponse('Invalid character slug', 400), { status: 400 });
     }
@@ -24,7 +25,7 @@ export async function PUT(request: NextRequest, { params }: { params: { slug: st
 
     // Check if character exists and user has permission
     const existingCharacter = await prisma.character.findUnique({
-      where: { slug: params.slug },
+      where: { slug },
     });
 
     if (!existingCharacter) {
@@ -39,7 +40,7 @@ export async function PUT(request: NextRequest, { params }: { params: { slug: st
 
     // Update character
     const updatedCharacter = await prisma.character.update({
-      where: { slug: params.slug },
+      where: { slug },
       data: validatedData.data,
     });
 

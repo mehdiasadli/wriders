@@ -3,10 +3,11 @@ import { findChapterBySlugSchema } from '@/schemas';
 import { createSuccessResponse, createErrorResponse } from '@/lib/api-response';
 import { prisma } from '@/lib/prisma';
 
-export async function DELETE(request: NextRequest, { params }: { params: { slug: string } }) {
+export async function DELETE(request: NextRequest, { params }: { params: Promise<{ slug: string }> }) {
   try {
+    const { slug } = await params;
     // Validate slug parameter
-    const slugValidation = findChapterBySlugSchema.safeParse({ slug: params.slug });
+    const slugValidation = findChapterBySlugSchema.safeParse({ slug });
     if (!slugValidation.success) {
       return NextResponse.json(createErrorResponse('Invalid chapter slug', 400), { status: 400 });
     }
@@ -16,7 +17,7 @@ export async function DELETE(request: NextRequest, { params }: { params: { slug:
 
     // Check if chapter exists and user has permission
     const existingChapter = await prisma.chapter.findUnique({
-      where: { slug: params.slug },
+      where: { slug },
       include: { book: true },
     });
 
@@ -32,7 +33,7 @@ export async function DELETE(request: NextRequest, { params }: { params: { slug:
 
     // Delete chapter
     await prisma.chapter.delete({
-      where: { slug: params.slug },
+      where: { slug },
     });
 
     return NextResponse.json(createSuccessResponse(null, 'Chapter deleted successfully'), { status: 200 });

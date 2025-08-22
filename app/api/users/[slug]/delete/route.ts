@@ -3,10 +3,11 @@ import { findUserBySlugSchema } from '@/schemas';
 import { createSuccessResponse, createErrorResponse } from '@/lib/api-response';
 import { prisma } from '@/lib/prisma';
 
-export async function DELETE(request: NextRequest, { params }: { params: { slug: string } }) {
+export async function DELETE(request: NextRequest, { params }: { params: Promise<{ slug: string }> }) {
   try {
+    const { slug } = await params;
     // Validate slug parameter
-    const slugValidation = findUserBySlugSchema.safeParse({ slug: params.slug });
+    const slugValidation = findUserBySlugSchema.safeParse({ slug });
     if (!slugValidation.success) {
       return NextResponse.json(createErrorResponse('Invalid user slug', 400), { status: 400 });
     }
@@ -16,7 +17,7 @@ export async function DELETE(request: NextRequest, { params }: { params: { slug:
 
     // Check if user exists and has permission
     const existingUser = await prisma.user.findUnique({
-      where: { slug: params.slug },
+      where: { slug },
     });
 
     if (!existingUser) {
@@ -31,7 +32,7 @@ export async function DELETE(request: NextRequest, { params }: { params: { slug:
 
     // Delete user
     await prisma.user.delete({
-      where: { slug: params.slug },
+      where: { slug },
     });
 
     return NextResponse.json(createSuccessResponse(null, 'User deleted successfully'), { status: 200 });

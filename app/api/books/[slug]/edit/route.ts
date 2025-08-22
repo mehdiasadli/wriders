@@ -4,7 +4,7 @@ import { createSuccessResponse, createErrorResponse } from '@/lib/api-response';
 import { prisma } from '@/lib/prisma';
 import { auth } from '@/lib/auth';
 
-export async function PUT(request: NextRequest, { params }: { params: { slug: string } }) {
+export async function PUT(request: NextRequest, { params }: { params: Promise<{ slug: string }> }) {
   try {
     const session = await auth();
 
@@ -12,11 +12,13 @@ export async function PUT(request: NextRequest, { params }: { params: { slug: st
       return NextResponse.json(createErrorResponse('Unauthorized', 401), { status: 401 });
     }
 
+    const { slug } = await params;
+
     const userId = session.user.id;
     const body = await request.json();
 
     // Validate slug parameter
-    const slugValidation = findBookBySlugSchema.safeParse({ slug: params.slug });
+    const slugValidation = findBookBySlugSchema.safeParse({ slug });
     if (!slugValidation.success) {
       return NextResponse.json(createErrorResponse('Invalid book slug', 400), { status: 400 });
     }
@@ -29,7 +31,7 @@ export async function PUT(request: NextRequest, { params }: { params: { slug: st
 
     // Check if book exists and user has permission
     const existingBook = await prisma.book.findUnique({
-      where: { slug: params.slug },
+      where: { slug },
     });
 
     if (!existingBook) {
@@ -50,7 +52,7 @@ export async function PUT(request: NextRequest, { params }: { params: { slug: st
 
     // Update book
     const updatedBook = await prisma.book.update({
-      where: { slug: params.slug },
+      where: { slug },
       data: { ...validatedData.data, publishedAt },
     });
 
