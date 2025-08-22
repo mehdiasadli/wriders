@@ -8,6 +8,15 @@ export function cn(...inputs: ClassValue[]) {
 export function slugify(text: string): string {
   return text
     .toLowerCase()
+    .replace(/[^\u0000-\u007F]/g, '')
+    .replace(/ə/gi, 'e')
+    .replace(/ğ/gi, 'gh')
+    .replace(/ş/gi, 'sh')
+    .replace(/ı/gi, 'i')
+    .replace(/ö/gi, 'o')
+    .replace(/ü/gi, 'u')
+    .replace(/ç/gi, 'ch')
+    .replace(/İ/g, 'i')
     .replace(/[^a-z0-9\s-]/g, '')
     .replace(/\s+/g, '-')
     .replace(/-+/g, '-')
