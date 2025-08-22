@@ -187,7 +187,7 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
         preferCSSPageSize: true,
       });
 
-      return new NextResponse(pdf, {
+      return new NextResponse(Buffer.from(pdf), {
         headers: {
           'Content-Type': 'application/pdf',
           'Content-Disposition': `attachment; filename="${chapter.title.replace(/[^a-z0-9]/gi, '_').toLowerCase()}.pdf"`,

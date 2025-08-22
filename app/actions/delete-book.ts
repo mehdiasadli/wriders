@@ -31,7 +31,6 @@ export async function deleteBook(formData: FormData) {
         id: true,
         title: true,
         authorId: true,
-        seriesId: true,
       },
     });
 
@@ -54,19 +53,7 @@ export async function deleteBook(formData: FormData) {
       where: { id: validatedData.bookId },
     });
 
-    // Redirect to appropriate page
-    if (book.seriesId) {
-      // If book was part of a series, redirect to series page
-      const series = await prisma.series.findUnique({
-        where: { id: book.seriesId },
-        select: { slug: true },
-      });
-      if (series) {
-        redirect(`/series/${series.slug}`);
-      }
-    }
-
-    // Otherwise redirect to author's books page
+    // Redirect to author's books page
     redirect(`/users/${user.slug}/books`);
   } catch (error) {
     console.error('Delete book error:', error);
