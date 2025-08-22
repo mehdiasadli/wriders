@@ -11,6 +11,8 @@ import { DeleteBookButton } from '@/components/delete-book-button';
 import { BookStructuredData } from '@/components/structured-data';
 import { Metadata } from 'next';
 
+export const revalidate = 3600; // 1 hour
+
 // Generate static params for published public books
 export async function generateStaticParams() {
   const books = await prisma.book.findMany({

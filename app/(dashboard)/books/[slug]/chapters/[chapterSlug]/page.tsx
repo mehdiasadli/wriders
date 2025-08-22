@@ -12,6 +12,8 @@ import { FavoriteChapterButton } from '@/components/favorite-chapter-button';
 import { DeleteChapterButton } from '@/components/delete-chapter-button';
 import { ChapterStructuredData } from '@/components/structured-data';
 
+export const revalidate = 3600; // 1 hour
+
 // Generate static params for published chapters
 export async function generateStaticParams() {
   const chapters = await prisma.chapter.findMany({

@@ -2,37 +2,6 @@ import { prisma } from '@/lib/prisma';
 import { getCurrentUser } from '@/lib/auth-utils';
 import type { Metadata } from 'next';
 
-// Generate static params for active users
-export async function generateStaticParams() {
-  const users = await prisma.user.findMany({
-    where: {
-      OR: [
-        // Authors with published books
-        {
-          booksAuthored: {
-            some: {
-              status: 'PUBLISHED',
-              visibility: 'PUBLIC',
-            },
-          },
-        },
-        // Users with activity (comments, reads, etc.)
-        {
-          comments: {
-            some: {},
-          },
-        },
-      ],
-    },
-    select: { slug: true },
-    take: 100, // Limit to prevent too many static pages
-  });
-
-  return users.map((user) => ({
-    slug: user.slug,
-  }));
-}
-
 // Generate metadata
 export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }): Promise<Metadata> {
   const { slug } = await params;
