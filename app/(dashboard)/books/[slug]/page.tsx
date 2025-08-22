@@ -11,27 +11,27 @@ import { DeleteBookButton } from '@/components/delete-book-button';
 import { BookStructuredData } from '@/components/structured-data';
 import { Metadata } from 'next';
 
-export const revalidate = 3600; // 1 hour
+// export const revalidate = 3600; // 1 hour
 
-// Generate static params for published public books
-export async function generateStaticParams() {
-  const books = await prisma.book.findMany({
-    where: {
-      visibility: 'PUBLIC',
-      status: 'PUBLISHED',
-    },
-    select: { slug: true },
-    take: 1000, // Limit to prevent excessive build times
-    orderBy: [
-      { followers: { _count: 'desc' } }, // Popular books first
-      { publishedAt: 'desc' }, // Then recent
-    ],
-  });
+// // Generate static params for published public books
+// export async function generateStaticParams() {
+//   const books = await prisma.book.findMany({
+//     where: {
+//       visibility: 'PUBLIC',
+//       status: 'PUBLISHED',
+//     },
+//     select: { slug: true },
+//     take: 1000, // Limit to prevent excessive build times
+//     orderBy: [
+//       { followers: { _count: 'desc' } }, // Popular books first
+//       { publishedAt: 'desc' }, // Then recent
+//     ],
+//   });
 
-  return books.map((book) => ({
-    slug: book.slug,
-  }));
-}
+//   return books.map((book) => ({
+//     slug: book.slug,
+//   }));
+// }
 
 export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }): Promise<Metadata> {
   const { slug } = await params;

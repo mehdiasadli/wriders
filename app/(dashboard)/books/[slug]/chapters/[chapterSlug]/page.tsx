@@ -12,40 +12,40 @@ import { FavoriteChapterButton } from '@/components/favorite-chapter-button';
 import { DeleteChapterButton } from '@/components/delete-chapter-button';
 import { ChapterStructuredData } from '@/components/structured-data';
 
-export const revalidate = 3600; // 1 hour
+// export const revalidate = 3600; // 1 hour
 
-// Generate static params for published chapters
-export async function generateStaticParams() {
-  const chapters = await prisma.chapter.findMany({
-    where: {
-      status: 'PUBLISHED',
-      book: {
-        visibility: 'PUBLIC',
-        status: 'PUBLISHED',
-      },
-    },
-    select: {
-      slug: true,
-      book: { select: { slug: true } },
-      _count: {
-        select: {
-          reads: true,
-          comments: true,
-        },
-      },
-    },
-    take: 2000, // Limit to prevent excessive build times
-    orderBy: [
-      { reads: { _count: 'desc' } }, // Popular chapters first
-      { publishedAt: 'desc' }, // Then recent
-    ],
-  });
+// // Generate static params for published chapters
+// export async function generateStaticParams() {
+//   const chapters = await prisma.chapter.findMany({
+//     where: {
+//       status: 'PUBLISHED',
+//       book: {
+//         visibility: 'PUBLIC',
+//         status: 'PUBLISHED',
+//       },
+//     },
+//     select: {
+//       slug: true,
+//       book: { select: { slug: true } },
+//       _count: {
+//         select: {
+//           reads: true,
+//           comments: true,
+//         },
+//       },
+//     },
+//     take: 2000, // Limit to prevent excessive build times
+//     orderBy: [
+//       { reads: { _count: 'desc' } }, // Popular chapters first
+//       { publishedAt: 'desc' }, // Then recent
+//     ],
+//   });
 
-  return chapters.map((chapter) => ({
-    slug: chapter.book.slug,
-    chapterSlug: chapter.slug,
-  }));
-}
+//   return chapters.map((chapter) => ({
+//     slug: chapter.book.slug,
+//     chapterSlug: chapter.slug,
+//   }));
+// }
 
 export async function generateMetadata({
   params,
