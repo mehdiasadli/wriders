@@ -2,15 +2,48 @@ import { redirect } from 'next/navigation';
 import { prisma } from '@/lib/prisma';
 import { auth } from '@/lib/auth';
 import { formatDistanceToNow } from 'date-fns';
-import { BookOpen, MessageCircle, Eye, Calendar, User, Download } from 'lucide-react';
 import Link from 'next/link';
 import { calculateReadingTime, getWordCount } from '@/lib/utils';
 import { Metadata } from 'next';
 import '@/components/chapter-content.css';
-import { ChapterNavigation } from '@/components/chapter-navigation';
 import { ChapterShareOptions } from '@/components/chapter-share-options';
 import { MarkAsReadButton } from '@/components/mark-as-read-button';
 import { FavoriteChapterButton } from '@/components/favorite-chapter-button';
+import { DeleteChapterButton } from '@/components/delete-chapter-button';
+import { ChapterStructuredData } from '@/components/structured-data';
+
+// Generate static params for published chapters
+export async function generateStaticParams() {
+  const chapters = await prisma.chapter.findMany({
+    where: {
+      status: 'PUBLISHED',
+      book: {
+        visibility: 'PUBLIC',
+        status: 'PUBLISHED',
+      },
+    },
+    select: {
+      slug: true,
+      book: { select: { slug: true } },
+      _count: {
+        select: {
+          reads: true,
+          comments: true,
+        },
+      },
+    },
+    take: 2000, // Limit to prevent excessive build times
+    orderBy: [
+      { reads: { _count: 'desc' } }, // Popular chapters first
+      { publishedAt: 'desc' }, // Then recent
+    ],
+  });
+
+  return chapters.map((chapter) => ({
+    slug: chapter.book.slug,
+    chapterSlug: chapter.slug,
+  }));
+}
 
 export async function generateMetadata({
   params,
@@ -20,17 +53,157 @@ export async function generateMetadata({
   const { slug, chapterSlug } = await params;
 
   const chapter = await prisma.chapter.findUnique({
-    where: { slug: chapterSlug, book: { slug } },
-    select: { title: true, order: true, synopsis: true, book: { select: { title: true } } },
+    where: {
+      slug: chapterSlug,
+      book: {
+        slug,
+        visibility: 'PUBLIC',
+        status: 'PUBLISHED',
+      },
+      status: 'PUBLISHED',
+    },
+    select: {
+      title: true,
+      order: true,
+      synopsis: true,
+      content: true,
+      publishedAt: true,
+      updatedAt: true,
+      _count: {
+        select: {
+          reads: true,
+          comments: true,
+          favoritedBy: true,
+        },
+      },
+      book: {
+        select: {
+          title: true,
+          slug: true,
+          synopsis: true,
+          author: {
+            select: {
+              name: true,
+              slug: true,
+            },
+          },
+          _count: {
+            select: {
+              chapters: true,
+            },
+          },
+        },
+      },
+    },
   });
 
   if (!chapter) {
-    return { title: 'Chapter' };
+    return {
+      title: 'Chapter Not Found',
+      description: 'The requested chapter could not be found on Wriders.',
+      robots: { index: false, follow: false },
+    };
   }
 
+  const wordCount = getWordCount(chapter.content || '');
+  const readingTime = calculateReadingTime(wordCount, 238); // Default WPM
+  const readCount = chapter._count.reads;
+  const commentCount = chapter._count.comments;
+  const favoriteCount = chapter._count.favoritedBy;
+
+  const description =
+    chapter.synopsis ||
+    `Chapter ${chapter.order} of ${chapter.book.title} by ${chapter.book.author.name}. ${wordCount} words, ${readingTime} min read. ${readCount} reads, ${commentCount} comments on Wriders.`;
+
+  const keywords = [
+    chapter.title,
+    chapter.book.title,
+    chapter.book.author.name,
+    'chapter',
+    'story',
+    'novel',
+    'fiction',
+    'online reading',
+    'free chapter',
+    `chapter ${chapter.order}`,
+    'serial story',
+    'wriders',
+    'literature',
+    'book chapter',
+  ];
+
   return {
-    title: `${chapter.title} - ${chapter.book.title} #${chapter.order}`,
-    description: chapter.synopsis,
+    title: `${chapter.title} - ${chapter.book.title} (Chapter ${chapter.order})`,
+    description,
+    keywords,
+    authors: [
+      { name: chapter.book.author.name, url: `${process.env.NEXT_PUBLIC_APP_URL!}/users/${chapter.book.author.slug}` },
+    ],
+    creator: chapter.book.author.name,
+    publisher: 'Wriders',
+    openGraph: {
+      type: 'article',
+      title: `${chapter.title} - ${chapter.book.title}`,
+      description,
+      url: `${process.env.NEXT_PUBLIC_APP_URL!}/books/${slug}/chapters/${chapterSlug}`,
+      siteName: 'Wriders',
+      locale: 'en_US',
+      images: [
+        {
+          url: '/wriders-og.png',
+          width: 1200,
+          height: 630,
+          alt: `${chapter.title} - Chapter ${chapter.order} of ${chapter.book.title} by ${chapter.book.author.name}`,
+          type: 'image/png',
+        },
+      ],
+      authors: [chapter.book.author.name],
+      publishedTime: chapter.publishedAt?.toISOString(),
+      modifiedTime: chapter.updatedAt?.toISOString(),
+      section: 'Chapters',
+      tags: ['chapter', 'story', 'novel', 'fiction', 'online reading', `chapter-${chapter.order}`],
+    },
+    twitter: {
+      card: 'summary_large_image',
+      title: `${chapter.title} - ${chapter.book.title}`,
+      description,
+      images: ['/wriders-og.png'],
+      creator: '@wriders',
+      site: '@wriders',
+    },
+    alternates: {
+      canonical: `${process.env.NEXT_PUBLIC_APP_URL!}/books/${slug}/chapters/${chapterSlug}`,
+    },
+    robots: {
+      index: true,
+      follow: true,
+      nocache: false,
+      googleBot: {
+        index: true,
+        follow: true,
+        noimageindex: false,
+        'max-video-preview': -1,
+        'max-image-preview': 'large',
+        'max-snippet': -1,
+      },
+    },
+    other: {
+      // Article-specific meta tags
+      'article:author': `${process.env.NEXT_PUBLIC_APP_URL!}/users/${chapter.book.author.slug}`,
+      'article:published_time': chapter.publishedAt?.toISOString() || '',
+      'article:modified_time': chapter.updatedAt?.toISOString() || '',
+      'article:section': 'Chapters',
+      'article:tag': `chapter,story,novel,fiction,${chapter.book.title.toLowerCase()}`,
+      // Reading-specific meta tags
+      'reading:time': `${readingTime}`,
+      'reading:word_count': `${wordCount}`,
+      'reading:chapter_number': `${chapter.order}`,
+      'reading:total_chapters': `${chapter.book._count.chapters}`,
+      // Book series meta tags
+      'book:author': chapter.book.author.name,
+      'book:series': chapter.book.title,
+      'book:chapter': `${chapter.order}`,
+    },
   };
 }
 
@@ -45,12 +218,14 @@ export default async function ChapterPage({ params }: ChapterPageProps) {
   const { slug, chapterSlug } = await params;
   const session = await auth();
 
-  const { wpm } = (await prisma.user.findUnique({
-    where: {
-      id: session?.user?.id,
-    },
-    select: { wpm: true },
-  })) ?? { wpm: 238 };
+  const { wpm } = session?.user?.id
+    ? ((await prisma.user.findUnique({
+        where: {
+          id: session.user.id,
+        },
+        select: { wpm: true },
+      })) ?? { wpm: 238 })
+    : { wpm: 238 };
 
   const chapter = await prisma.chapter.findUnique({
     where: {
@@ -88,7 +263,9 @@ export default async function ChapterPage({ params }: ChapterPageProps) {
       book: {
         slug,
       },
-      OR: [{ status: 'PUBLISHED' }, { book: { authorId: session?.user?.id } }],
+      OR: session?.user?.id
+        ? [{ status: 'PUBLISHED' }, { book: { authorId: session.user.id } }]
+        : [{ status: 'PUBLISHED' }],
     },
     select: {
       id: true,
@@ -143,7 +320,7 @@ export default async function ChapterPage({ params }: ChapterPageProps) {
           <div className='mt-8 pt-6 border-t border-gray-200'>
             <div className='flex items-center justify-center gap-6'>
               <FavoriteChapterButton chapterSlug={chapterSlug} />
-              <MarkAsReadButton chapterSlug={chapterSlug} initialReadCount={chapter._count.reads} />
+              <MarkAsReadButton chapterSlug={chapterSlug} />
             </div>
           </div>
         )}
@@ -190,6 +367,7 @@ export default async function ChapterPage({ params }: ChapterPageProps) {
                 >
                   Edit Content
                 </Link>
+                <DeleteChapterButton chapterId={chapter.id} chapterTitle={chapter.title} />
               </>
             )}
           </div>
@@ -246,6 +424,15 @@ export default async function ChapterPage({ params }: ChapterPageProps) {
           </div>
         </div>
       </div>
+
+      {/* Structured Data for SEO */}
+      <ChapterStructuredData
+        chapter={chapter}
+        bookSlug={slug}
+        chapterSlug={chapterSlug}
+        wordCount={wordCount}
+        readingTime={readingTime}
+      />
     </div>
   );
 }

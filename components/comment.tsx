@@ -78,7 +78,7 @@ export function Comment({
   const [isReplying, setIsReplying] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
-  const [localComment, setLocalComment] = useState(comment);
+  const [localComment] = useState(comment);
 
   const canEdit = currentUserId === comment.authorId || currentUserId === chapterAuthorId;
   const canDelete = currentUserId === comment.authorId || currentUserId === chapterAuthorId;

@@ -14,12 +14,10 @@ interface EditChapterContentFormProps {
     content: string;
   };
   bookSlug: string;
-  bookTitle: string;
-  onSuccess?: () => void;
   className?: string;
 }
 
-export function EditChapterContentForm({ chapter, bookSlug, bookTitle, onSuccess }: EditChapterContentFormProps) {
+export function EditChapterContentForm({ chapter, bookSlug }: EditChapterContentFormProps) {
   const [content, setContent] = useState(chapter.content);
   const [isSubmitting, setIsSubmitting] = useState(false);
 

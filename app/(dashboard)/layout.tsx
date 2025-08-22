@@ -31,14 +31,8 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
               <Link href='/books' className='text-sm text-gray-600 hover:text-gray-900 transition-colors'>
                 Books
               </Link>
-              <Link href='/series' className='text-sm text-gray-600 hover:text-gray-900 transition-colors'>
-                Series
-              </Link>
               <Link href='/explore' className='text-sm text-gray-600 hover:text-gray-900 transition-colors'>
                 Explore
-              </Link>
-              <Link href='/writers' className='text-sm text-gray-600 hover:text-gray-900 transition-colors'>
-                Writers
               </Link>
             </nav>
           </div>
@@ -83,25 +77,11 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                 Books
               </Link>
               <Link
-                href='/series'
-                className='text-sm text-gray-600 hover:text-gray-900 transition-colors'
-                onClick={() => setIsMobileMenuOpen(false)}
-              >
-                Series
-              </Link>
-              <Link
                 href='/explore'
                 className='text-sm text-gray-600 hover:text-gray-900 transition-colors'
                 onClick={() => setIsMobileMenuOpen(false)}
               >
                 Explore
-              </Link>
-              <Link
-                href='/writers'
-                className='text-sm text-gray-600 hover:text-gray-900 transition-colors'
-                onClick={() => setIsMobileMenuOpen(false)}
-              >
-                Writers
               </Link>
             </nav>
           </div>

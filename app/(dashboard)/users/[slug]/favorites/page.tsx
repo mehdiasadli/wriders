@@ -28,7 +28,6 @@ export default async function UserFavoritesPage({ params }: UserFavoritesPagePro
   }
 
   const isOwnProfile = currentUser?.id === profileUser.id;
-  const isCurrentUserAuthor = currentUser?.roles.includes('AUTHOR');
 
   // Get favorite books and chapters
   const [favoriteBooks, favoriteChapters] = await Promise.all([
@@ -51,12 +50,7 @@ export default async function UserFavoritesPage({ params }: UserFavoritesPagePro
                 slug: true,
               },
             },
-            series: {
-              select: {
-                title: true,
-                slug: true,
-              },
-            },
+
             _count: {
               select: {
                 chapters: {
@@ -137,18 +131,6 @@ export default async function UserFavoritesPage({ params }: UserFavoritesPagePro
                         >
                           {favorite.book.author.name}
                         </Link>
-                        {favorite.book.series && (
-                          <>
-                            {' '}
-                            • Part of{' '}
-                            <Link
-                              href={`/series/${favorite.book.series.slug}`}
-                              className='border-b border-dotted border-gray-400 hover:border-gray-600'
-                            >
-                              {favorite.book.series.title}
-                            </Link>
-                          </>
-                        )}
                       </div>
                     </div>
                     <div className='text-right text-sm text-gray-500'>{favorite.book._count.chapters} chapters</div>

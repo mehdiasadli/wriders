@@ -15,12 +15,6 @@ interface EditBookFormProps {
     synopsis: string | null;
     visibility: 'PUBLIC' | 'PRIVATE';
     status: 'DRAFT' | 'SOON' | 'ARCHIVED' | 'PUBLISHED';
-    series?: {
-      id: string;
-      title: string;
-      books: { orderInSeries: number | null; title: string }[];
-    } | null;
-    orderInSeries: number | null;
   };
 }
 
@@ -36,7 +30,6 @@ export function EditBookForm({ book }: EditBookFormProps) {
       synopsis: book.synopsis || undefined,
       visibility: book.visibility,
       status: book.status,
-      orderInSeries: book.orderInSeries || null,
     },
   });
 
@@ -64,7 +57,7 @@ export function EditBookForm({ book }: EditBookFormProps) {
           router.push(`/books/${result.data.slug}`);
         }, 2000);
       }
-    } catch (error) {
+    } catch (_error) {
       setError('An error occurred. Please try again.');
     } finally {
       setIsLoading(false);
@@ -76,7 +69,6 @@ export function EditBookForm({ book }: EditBookFormProps) {
       synopsis: book.synopsis || undefined,
       visibility: book.visibility,
       status: book.status,
-      orderInSeries: book.orderInSeries || null,
     });
     setError(null);
     setSuccess(null);
@@ -172,39 +164,6 @@ export function EditBookForm({ book }: EditBookFormProps) {
             <p className='text-sm text-red-600 mt-1'>{form.formState.errors.visibility.message}</p>
           )}
         </div>
-
-        {/* Series (Read-only) */}
-        {book.series && (
-          <div>
-            <label className='block text-sm font-medium text-gray-900 mb-2'>Series</label>
-            <input
-              type='text'
-              value={book.series.title}
-              disabled
-              className='w-full px-4 py-3 text-sm border border-gray-200 rounded-none bg-gray-50 text-gray-500'
-            />
-            <p className='text-sm text-gray-500 mt-1'>Series cannot be changed after creation</p>
-          </div>
-        )}
-
-        {/* Order in Series */}
-        {book.series && (
-          <div>
-            <label className='block text-sm font-medium text-gray-900 mb-2'>Order in Series (Optional)</label>
-            <p className='text-sm text-gray-600 mb-2'>What position does this book hold in the series?</p>
-            <input
-              type='number'
-              placeholder='e.g., 1, 2, 3...'
-              className='w-full px-4 py-3 text-sm border border-gray-200 rounded-none focus:outline-none focus:border-gray-400 bg-white'
-              disabled={isLoading}
-              min={1}
-              {...form.register('orderInSeries', { valueAsNumber: true })}
-            />
-            {form.formState.errors.orderInSeries && (
-              <p className='text-sm text-red-600 mt-1'>{form.formState.errors.orderInSeries.message}</p>
-            )}
-          </div>
-        )}
 
         {/* Status Messages */}
         {error && (

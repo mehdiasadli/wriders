@@ -86,7 +86,6 @@ export default async function UserReadsPage({ params }: UserReadsPageProps) {
 
   for (const read of allReadChapters) {
     const book = read.chapter.book;
-    const isBookAuthor = currentUser?.id === book.authorId;
     const isFollowingBook = followedBookIds.includes(book.id);
 
     if (isOwnProfile || isCurrentUserAuthor) {

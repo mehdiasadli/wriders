@@ -3,10 +3,11 @@ import { findBookBySlugSchema } from '@/schemas';
 import { createSuccessResponse, createErrorResponse } from '@/lib/api-response';
 import { prisma } from '@/lib/prisma';
 
-export async function DELETE(request: NextRequest, { params }: { params: { slug: string } }) {
+export async function DELETE(request: NextRequest, { params }: { params: Promise<{ slug: string }> }) {
   try {
+    const { slug } = await params;
     // Validate slug parameter
-    const slugValidation = findBookBySlugSchema.safeParse({ slug: params.slug });
+    const slugValidation = findBookBySlugSchema.safeParse({ slug });
     if (!slugValidation.success) {
       return NextResponse.json(createErrorResponse('Invalid book slug', 400), { status: 400 });
     }
@@ -16,7 +17,7 @@ export async function DELETE(request: NextRequest, { params }: { params: { slug:
 
     // Check if book exists and user has permission
     const existingBook = await prisma.book.findUnique({
-      where: { slug: params.slug },
+      where: { slug },
     });
 
     if (!existingBook) {
@@ -31,7 +32,7 @@ export async function DELETE(request: NextRequest, { params }: { params: { slug:
 
     // Delete book
     await prisma.book.delete({
-      where: { slug: params.slug },
+      where: { slug },
     });
 
     return NextResponse.json(createSuccessResponse(null, 'Book deleted successfully'), { status: 200 });

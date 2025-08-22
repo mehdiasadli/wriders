@@ -33,12 +33,13 @@ export function LoginForm() {
       });
 
       if (result?.error) {
+        // Check if it's an unverified user issue
         setError('Invalid email or password');
       } else if (result?.ok) {
         router.push('/');
         router.refresh();
       }
-    } catch (error) {
+    } catch (_error) {
       setError('An error occurred. Please try again.');
     } finally {
       setIsLoading(false);
@@ -80,7 +81,11 @@ export function LoginForm() {
           )}
         </div>
 
-        {error && <div className='text-sm text-red-600 p-3 border border-red-200 bg-red-50'>{error}</div>}
+        {error && (
+          <div className='space-y-3'>
+            <div className='text-sm text-red-600 p-3 border border-red-200 bg-red-50'>{error}</div>
+          </div>
+        )}
 
         <button
           type='submit'
@@ -93,7 +98,7 @@ export function LoginForm() {
 
       <div className='mt-8 text-center'>
         <p className='text-sm text-gray-600'>
-          Don't have an account?{' '}
+          Don&apos;t have an account?{' '}
           <Link
             href='/auth/signup'
             className='text-gray-900 hover:text-gray-700 border-b border-dotted border-gray-400 hover:border-gray-600 transition-colors'
@@ -101,6 +106,16 @@ export function LoginForm() {
             Join Wriders
           </Link>
         </p>
+        {error && (
+          <p className='text-sm text-gray-600 mt-3'>
+            <Link
+              href={`/auth/resend-verification?email=${encodeURIComponent(form.getValues('email') || '')}`}
+              className='text-gray-900 hover:text-gray-700 border-b border-dotted border-gray-400 hover:border-gray-600 transition-colors'
+            >
+              Resend verification email
+            </Link>
+          </p>
+        )}
       </div>
     </div>
   );

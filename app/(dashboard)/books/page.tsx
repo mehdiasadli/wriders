@@ -1,6 +1,6 @@
 import { getCurrentUser } from '@/lib/auth-utils';
 import { prisma } from '@/lib/prisma';
-import { BookOpen, User, Calendar, Eye } from 'lucide-react';
+import { BookOpen, User, Calendar } from 'lucide-react';
 import Link from 'next/link';
 import { Prisma } from '@prisma/client';
 import { formatDistanceToNow } from 'date-fns';
@@ -12,7 +12,7 @@ export async function generateMetadata() {
     openGraph: {
       title: 'Books',
       description: 'List of all published books on Wriders',
-      url: 'https://wriders.com/books',
+      url: `${process.env.NEXT_PUBLIC_APP_URL!}/books`,
       siteName: 'Wriders',
       images: [],
     },
@@ -23,7 +23,7 @@ export async function generateMetadata() {
       images: [],
     },
     alternates: {
-      canonical: 'https://wriders.com/books',
+      canonical: `${process.env.NEXT_PUBLIC_APP_URL!}/books`,
     },
     robots: {
       index: true,
@@ -68,17 +68,20 @@ export default async function BooksPage({
 
   const books = await prisma.book.findMany({
     where: {
-      OR: [
-        { authorId: user.id },
-        { visibility: 'PUBLIC', status: 'PUBLISHED' },
-        { visibility: 'PRIVATE', status: 'PUBLISHED', followers: { some: { userId: user.id } } },
-      ],
+      OR: user
+        ? [
+            { authorId: user.id },
+            { visibility: 'PUBLIC', status: 'PUBLISHED' },
+            { visibility: 'PRIVATE', status: 'PUBLISHED', followers: { some: { userId: user.id } } },
+          ]
+        : [
+            { visibility: 'PUBLIC', status: 'PUBLISHED' }, // Only public books for unauthenticated users
+          ],
       ...(search && {
         OR: [
           { title: { contains: search, mode: 'insensitive' as const } },
           { synopsis: { contains: search, mode: 'insensitive' as const } },
           { author: { name: { contains: search, mode: 'insensitive' as const } } },
-          { series: { title: { contains: search, mode: 'insensitive' as const } } },
         ],
       }),
     },
@@ -88,12 +91,6 @@ export default async function BooksPage({
           favoritedBy: true,
           followers: true,
           chapters: true,
-        },
-      },
-      series: {
-        select: {
-          slug: true,
-          title: true,
         },
       },
       chapters: {
@@ -252,12 +249,6 @@ export default async function BooksPage({
                             <User className='w-4 h-4' />
                             <span>{book.author.name}</span>
                           </div>
-                          {book.series && (
-                            <div className='flex items-center gap-1'>
-                              <BookOpen className='w-4 h-4' />
-                              <span>{book.series.title}</span>
-                            </div>
-                          )}
                           {book.publishedAt && (
                             <div className='flex items-center gap-1'>
                               <Calendar className='w-4 h-4' />

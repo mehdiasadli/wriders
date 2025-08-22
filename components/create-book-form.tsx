@@ -6,24 +6,17 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { useRouter } from 'next/navigation';
 import { createBookSchema, type CreateBookSchema } from '@/schemas/books.schema';
 import { Eye, Lock } from 'lucide-react';
-import Link from 'next/link';
 import { BookVisibilitySchema } from '@/schemas';
 
 interface CreateBookFormProps {
-  paramSeriesId?: string;
   initialFormData: {
     title?: string;
     synopsis?: string;
     visibility?: string;
   };
-  series: {
-    id: string;
-    title: string;
-    books: { orderInSeries: number | null; title: string }[];
-  }[];
 }
 
-export function CreateBookForm({ series, paramSeriesId, initialFormData }: CreateBookFormProps) {
+export function CreateBookForm({ initialFormData }: CreateBookFormProps) {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
@@ -37,8 +30,6 @@ export function CreateBookForm({ series, paramSeriesId, initialFormData }: Creat
       title: decodeURIComponent(initialFormData.title || ''),
       synopsis: decodeURIComponent(initialFormData.synopsis || ''),
       visibility: validatedVisibility,
-      seriesId: paramSeriesId,
-      orderInSeries: null,
     },
   });
 
@@ -47,20 +38,13 @@ export function CreateBookForm({ series, paramSeriesId, initialFormData }: Creat
     setError(null);
     setSuccess(null);
 
-    // Transform empty seriesId to null
-    const transformedData = {
-      ...data,
-      seriesId: data.seriesId === '' ? null : data.seriesId,
-      orderInSeries: data.seriesId === '' ? null : data.orderInSeries,
-    };
-
     try {
       const response = await fetch('/api/books/create', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify(transformedData),
+        body: JSON.stringify(data),
       });
 
       const result = await response.json();
@@ -73,7 +57,7 @@ export function CreateBookForm({ series, paramSeriesId, initialFormData }: Creat
           router.push(`/books/${result.data.slug}`);
         }, 2000);
       }
-    } catch (error) {
+    } catch (_error) {
       setError('An error occurred. Please try again.');
     } finally {
       setIsLoading(false);
@@ -141,58 +125,6 @@ export function CreateBookForm({ series, paramSeriesId, initialFormData }: Creat
             <p className='text-sm text-red-600 mt-1'>{form.formState.errors.visibility.message}</p>
           )}
         </div>
-
-        {/* Series */}
-        {series.length > 0 && (
-          <div>
-            <div className='flex items-center gap-4 mb-2'>
-              <label className='text-sm font-medium text-gray-900'>Series (Optional)</label>
-              <Link
-                href={`/series/create?ref=create-book&title=${encodeURIComponent(form.watch('title') || '')}&synopsis=${encodeURIComponent(form.watch('synopsis') || '')}&visibility=${form.watch('visibility')}`}
-                className='text-sm text-gray-600 hover:text-gray-900 transition-colors border-b border-gray-200 hover:border-gray-400 pb-0.5'
-              >
-                Create New Series
-              </Link>
-            </div>
-            <p className='text-sm text-gray-600 mb-2'>Is this book part of a series?</p>
-
-            <select
-              className='w-full px-4 py-3 text-sm border border-gray-200 rounded-none focus:outline-none focus:border-gray-400 bg-white'
-              disabled={isLoading}
-              {...form.register('seriesId')}
-            >
-              <option value=''>No series</option>
-              {series.map((serie) => (
-                <option key={serie.id} value={serie.id}>
-                  {serie.title}
-                </option>
-              ))}
-            </select>
-
-            {form.formState.errors.seriesId && (
-              <p className='text-sm text-red-600 mt-1'>{form.formState.errors.seriesId.message}</p>
-            )}
-          </div>
-        )}
-
-        {/* Order in Series */}
-        {form.watch('seriesId') && (
-          <div>
-            <label className='block text-sm font-medium text-gray-900 mb-2'>Order in Series (Optional)</label>
-            <p className='text-sm text-gray-600 mb-2'>What position does this book hold in the series?</p>
-            <input
-              type='number'
-              placeholder='e.g., 1, 2, 3...'
-              className='w-full px-4 py-3 text-sm border border-gray-200 rounded-none focus:outline-none focus:border-gray-400 bg-white'
-              disabled={isLoading}
-              min={1}
-              {...form.register('orderInSeries', { valueAsNumber: true })}
-            />
-            {form.formState.errors.orderInSeries && (
-              <p className='text-sm text-red-600 mt-1'>{form.formState.errors.orderInSeries.message}</p>
-            )}
-          </div>
-        )}
 
         {/* Status Messages */}
         {error && (

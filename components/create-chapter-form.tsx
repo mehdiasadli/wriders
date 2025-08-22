@@ -8,20 +8,12 @@ import { useRouter } from 'next/navigation';
 
 interface CreateChapterFormProps {
   bookId: string;
-  bookTitle: string;
   bookSlug: string;
   existingChapterOrders?: number[];
-  onSuccess?: () => void;
   className?: string;
 }
 
-export function CreateChapterForm({
-  bookId,
-  bookTitle,
-  bookSlug,
-  existingChapterOrders = [],
-  onSuccess,
-}: CreateChapterFormProps) {
+export function CreateChapterForm({ bookId, bookSlug, existingChapterOrders = [] }: CreateChapterFormProps) {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const router = useRouter();
 

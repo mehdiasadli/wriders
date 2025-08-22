@@ -1,7 +1,5 @@
 import { redirect } from 'next/navigation';
 import { prisma } from '@/lib/prisma';
-import { auth } from '@/lib/auth';
-import { ArrowLeft } from 'lucide-react';
 import Link from 'next/link';
 import { Metadata } from 'next';
 import { ChapterDownloadOptions } from '@/components/chapter-download-options';
@@ -37,7 +35,6 @@ interface DownloadPageProps {
 
 export default async function DownloadPage({ params }: DownloadPageProps) {
   const { slug, chapterSlug } = await params;
-  const session = await auth();
 
   const chapter = await prisma.chapter.findUnique({
     where: {

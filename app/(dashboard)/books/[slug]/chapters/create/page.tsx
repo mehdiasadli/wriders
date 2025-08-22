@@ -5,12 +5,13 @@ import { auth } from '@/lib/auth';
 import Link from 'next/link';
 
 interface CreateChapterPageProps {
-  params: {
+  params: Promise<{
     slug: string;
-  };
+  }>;
 }
 
 export default async function CreateChapterPage({ params }: CreateChapterPageProps) {
+  const { slug } = await params;
   const session = await auth();
 
   if (!session?.user) {
@@ -19,7 +20,7 @@ export default async function CreateChapterPage({ params }: CreateChapterPagePro
 
   const book = await prisma.book.findUnique({
     where: {
-      slug: params.slug,
+      slug: slug,
       authorId: session.user.id, // Only author can create chapters
     },
     select: {
@@ -56,12 +57,7 @@ export default async function CreateChapterPage({ params }: CreateChapterPagePro
 
         {/* Form */}
         <div className='max-w-2xl mx-auto'>
-          <CreateChapterForm
-            existingChapterOrders={existingChapterOrders}
-            bookId={book.id}
-            bookTitle={book.title}
-            bookSlug={book.slug}
-          />
+          <CreateChapterForm existingChapterOrders={existingChapterOrders} bookId={book.id} bookSlug={book.slug} />
         </div>
       </div>
     </div>

@@ -64,12 +64,6 @@ export default async function UserBooksPage({ params }: UserBooksPageProps) {
       visibility: true,
       publishedAt: true,
       createdAt: true,
-      series: {
-        select: {
-          title: true,
-          slug: true,
-        },
-      },
       _count: {
         select: {
           chapters: {
@@ -106,17 +100,6 @@ export default async function UserBooksPage({ params }: UserBooksPageProps) {
                     >
                       {book.title}
                     </Link>
-                    {book.series && (
-                      <div className='text-sm text-gray-600 mt-1'>
-                        Part of{' '}
-                        <Link
-                          href={`/series/${book.series.slug}`}
-                          className='border-b border-dotted border-gray-400 hover:border-gray-600'
-                        >
-                          {book.series.title}
-                        </Link>
-                      </div>
-                    )}
                   </div>
                   <div className='text-right text-sm text-gray-500'>{book._count.chapters} chapters</div>
                 </div>

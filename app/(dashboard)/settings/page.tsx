@@ -1,7 +1,24 @@
 import { getCurrentUserFresh } from '@/lib/auth-utils';
 import Link from 'next/link';
-import { UpdateUserForm } from './update-user-form';
 import { notFound } from 'next/navigation';
+import type { Metadata } from 'next';
+
+export const metadata: Metadata = {
+  title: 'Settings - Manage Your Account',
+  description:
+    'Manage your Wriders account settings, profile information, and preferences. Update your writing profile and privacy settings.',
+  keywords: ['account settings', 'profile management', 'user preferences', 'account security'],
+  robots: {
+    index: false, // Settings pages typically shouldn't be indexed
+    follow: false,
+  },
+  openGraph: {
+    title: 'Settings - Manage Your Account | Wriders',
+    description: 'Manage your Wriders account settings, profile information, and preferences.',
+    url: `${process.env.NEXT_PUBLIC_APP_URL!}/settings`,
+    type: 'website',
+  },
+};
 
 export default async function SettingsPage() {
   const data = await getCurrentUserFresh();
@@ -24,8 +41,12 @@ export default async function SettingsPage() {
           <p className='text-sm text-gray-600 mb-8'>Update your user settings</p>
         </div>
 
+        {/* Currently no settings */}
+        <div className='text-center'>
+          <p className='text-sm text-gray-600'>Currently no settings available.</p>
+        </div>
         {/* Form */}
-        <div className='max-w-2xl mx-auto'>
+        {/* <div className='max-w-2xl mx-auto'>
           <UpdateUserForm
             user={{
               id: data.id,
@@ -34,7 +55,7 @@ export default async function SettingsPage() {
               slug: data.slug,
             }}
           />
-        </div>
+        </div> */}
       </div>
     </div>
   );

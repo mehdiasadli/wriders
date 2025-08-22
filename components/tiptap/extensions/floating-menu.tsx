@@ -4,18 +4,12 @@ import {
   Heading1,
   Heading2,
   Heading3,
-  ListOrdered,
-  List,
-  Code2,
   ChevronRight,
   Quote,
-  ImageIcon,
   Minus,
   AlignLeft,
   AlignCenter,
   AlignRight,
-  CodeSquare,
-  TextQuote,
 } from 'lucide-react';
 import { FloatingMenu } from '@tiptap/react/menus';
 import { Command, CommandEmpty, CommandGroup, CommandItem, CommandList } from '@/components/ui/command';
@@ -41,13 +35,13 @@ type CommandGroupType = {
 
 const groups: CommandGroupType[] = [
   {
-    group: 'Basic blocks',
+    group: 'Text',
     items: [
       {
         title: 'Text',
         description: 'Just start writing with plain text',
         icon: ChevronRight,
-        keywords: 'paragraph text',
+        keywords: 'paragraph text normal',
         command: (editor) => editor.chain().focus().clearNodes().run(),
       },
       {
@@ -72,65 +66,23 @@ const groups: CommandGroupType[] = [
         command: (editor) => editor.chain().focus().toggleHeading({ level: 3 }).run(),
       },
       {
-        title: 'Bullet List',
-        description: 'Create a simple bullet list',
-        icon: List,
-        keywords: 'unordered ul bullets',
-        command: (editor) => editor.chain().focus().toggleBulletList().run(),
-      },
-      {
-        title: 'Numbered List',
-        description: 'Create a ordered list',
-        icon: ListOrdered,
-        keywords: 'numbered ol',
-        command: (editor) => editor.chain().focus().toggleOrderedList().run(),
-      },
-      {
-        title: 'Code Block',
-        description: 'Capture code snippets',
-        icon: Code2,
-        keywords: 'code snippet pre',
-        command: (editor) => editor.chain().focus().toggleCodeBlock().run(),
-      },
-      {
-        title: 'Image',
-        description: 'Insert an image',
-        icon: ImageIcon,
-        keywords: 'image picture photo',
-        command: (editor) => editor.chain().focus().insertImagePlaceholder().run(),
-      },
-      {
-        title: 'Horizontal Rule',
-        description: 'Add a horizontal divider',
-        icon: Minus,
-        keywords: 'horizontal rule divider',
-        command: (editor) => editor.chain().focus().setHorizontalRule().run(),
+        title: 'Blockquote',
+        description: 'Insert a quote block',
+        icon: Quote,
+        keywords: 'blockquote quote cite',
+        command: (editor) => editor.chain().focus().toggleBlockquote().run(),
       },
     ],
   },
   {
-    group: 'Inline',
+    group: 'Elements',
     items: [
       {
-        title: 'Quote',
-        description: 'Capture a quotation',
-        icon: Quote,
-        keywords: 'blockquote cite',
-        command: (editor) => editor.chain().focus().toggleBlockquote().run(),
-      },
-      {
-        title: 'Code',
-        description: 'Inline code snippet',
-        icon: CodeSquare,
-        keywords: 'code inline',
-        command: (editor) => editor.chain().focus().toggleCode().run(),
-      },
-      {
-        title: 'Blockquote',
-        description: 'Block quote',
-        icon: TextQuote,
-        keywords: 'blockquote quote',
-        command: (editor) => editor.chain().focus().toggleBlockquote().run(),
+        title: 'Horizontal Rule',
+        description: 'Add a horizontal divider',
+        icon: Minus,
+        keywords: 'horizontal rule divider line break',
+        command: (editor) => editor.chain().focus().setHorizontalRule().run(),
       },
     ],
   },
@@ -319,16 +271,20 @@ export function TipTapFloatingMenu({ editor }: { editor: Editor }) {
       <Command
         role='listbox'
         ref={commandRef}
-        className='z-50 w-72 overflow-hidden rounded-lg border bg-popover shadow-lg'
+        className='z-50 w-72 overflow-hidden border border-gray-200 bg-white shadow-lg'
       >
         <ScrollArea className='max-h-[330px]'>
           <CommandList>
-            <CommandEmpty className='py-3 text-center text-sm text-muted-foreground'>No results found</CommandEmpty>
+            <CommandEmpty className='py-3 text-center text-sm text-gray-500'>No results found</CommandEmpty>
 
             {filteredGroups.map((group, groupIndex) => (
               <CommandGroup
                 key={`${group.group}-${groupIndex}`}
-                heading={<div className='px-2 py-1.5 text-xs font-medium text-muted-foreground'>{group.group}</div>}
+                heading={
+                  <div className='px-3 py-2 text-xs font-medium text-gray-700 border-b border-gray-100'>
+                    {group.group}
+                  </div>
+                }
               >
                 {group.items.map((item, itemIndex) => {
                   const flatIndex =
@@ -341,8 +297,8 @@ export function TipTapFloatingMenu({ editor }: { editor: Editor }) {
                       value={`${group.group}-${item.title}`}
                       onSelect={() => executeCommand(item.command)}
                       className={cn(
-                        'gap-3 aria-selected:bg-accent/50',
-                        flatIndex === selectedIndex ? 'bg-accent/50' : ''
+                        'gap-3 px-3 py-2 hover:bg-gray-50 cursor-pointer',
+                        flatIndex === selectedIndex ? 'bg-gray-50' : ''
                       )}
                       aria-selected={flatIndex === selectedIndex}
                       ref={(el) => {
@@ -350,14 +306,14 @@ export function TipTapFloatingMenu({ editor }: { editor: Editor }) {
                       }}
                       tabIndex={flatIndex === selectedIndex ? 0 : -1}
                     >
-                      <div className='flex h-9 w-9 items-center justify-center rounded-md border bg-background'>
-                        <item.icon className='h-4 w-4' />
+                      <div className='flex h-8 w-8 items-center justify-center border border-gray-300 bg-white'>
+                        <item.icon className='h-4 w-4 text-gray-700' />
                       </div>
                       <div className='flex flex-1 flex-col'>
-                        <span className='text-sm font-medium'>{item.title}</span>
-                        <span className='text-xs text-muted-foreground'>{item.description}</span>
+                        <span className='text-sm font-medium text-gray-900'>{item.title}</span>
+                        <span className='text-xs text-gray-500'>{item.description}</span>
                       </div>
-                      <kbd className='ml-auto flex h-5 items-center rounded bg-muted px-1.5 text-xs text-muted-foreground'>
+                      <kbd className='ml-auto flex h-5 items-center border border-gray-300 bg-white px-1.5 text-xs text-gray-500'>
                         ↵
                       </kbd>
                     </CommandItem>

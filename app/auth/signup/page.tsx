@@ -1,5 +1,24 @@
 import { RegisterForm } from '@/components/register-form';
 import Link from 'next/link';
+import type { Metadata } from 'next';
+
+export const metadata: Metadata = {
+  title: 'Sign Up - Join the Writing Community',
+  description:
+    'Create your Wriders account to start publishing stories, reading amazing books, and connecting with fellow writers and readers.',
+  keywords: ['sign up', 'register', 'join community', 'create account', 'writer registration'],
+  robots: {
+    index: false,
+    follow: false,
+  },
+  openGraph: {
+    title: 'Sign Up - Join the Writing Community | Wriders',
+    description:
+      'Create your Wriders account to start publishing stories, reading amazing books, and connecting with fellow writers and readers.',
+    url: `${process.env.NEXT_PUBLIC_APP_URL!}/auth/signup`,
+    type: 'website',
+  },
+};
 
 export default function SignupPage() {
   return (

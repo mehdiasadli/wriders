@@ -107,6 +107,19 @@ export const deleteChapterSchema = z.object({
   id: chapterSchema.shape.id,
 });
 
+export const reorderChaptersSchema = z.object({
+  bookSlug: z.string({
+    required_error: 'Book slug is required',
+    invalid_type_error: 'Book slug must be a string',
+  }),
+  chapters: z.array(
+    z.object({
+      id: chapterSchema.shape.id,
+      order: chapterSchema.shape.order,
+    })
+  ),
+});
+
 export type ChapterSchema = z.infer<typeof chapterSchema>;
 export type CreateChapterSchema = z.infer<typeof createChapterSchema>;
 export type UpdateChapterSchema = z.infer<typeof updateChapterSchema>;
@@ -114,3 +127,4 @@ export type FindChapterByIdSchema = z.infer<typeof findChapterByIdSchema>;
 export type FindChapterBySlugSchema = z.infer<typeof findChapterBySlugSchema>;
 export type FindManyChaptersSchema = z.infer<typeof findManyChaptersSchema>;
 export type DeleteChapterSchema = z.infer<typeof deleteChapterSchema>;
+export type ReorderChaptersSchema = z.infer<typeof reorderChaptersSchema>;

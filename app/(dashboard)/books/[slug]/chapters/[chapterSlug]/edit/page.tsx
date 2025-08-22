@@ -71,7 +71,6 @@ export default async function EditChapterPage({ params }: EditChapterPageProps) 
               publishedAt: chapter.publishedAt,
             }}
             bookSlug={chapter.book.slug}
-            bookTitle={chapter.book.title}
           />
         </div>
       </div>

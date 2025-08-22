@@ -1,14 +1,17 @@
 import { getCurrentUser } from '@/lib/auth-utils';
 import { prisma } from '@/lib/prisma';
 import { notFound } from 'next/navigation';
-import { Calendar, Eye, Heart, MessageCircle, BookOpen, User } from 'lucide-react';
+import { Calendar, User } from 'lucide-react';
 import Link from 'next/link';
 import { formatDistanceToNow } from 'date-fns';
 import { TableOfContents } from '@/components/table-of-contents';
 import { FavoriteBookButton } from '@/components/favorite-book-button';
 import { FollowBookButton } from '@/components/follow-book-button';
+import { DeleteBookButton } from '@/components/delete-book-button';
+import { BookStructuredData } from '@/components/structured-data';
+import { Metadata } from 'next';
 
-// generate static params
+// Generate static params for published public books
 export async function generateStaticParams() {
   const books = await prisma.book.findMany({
     where: {
@@ -16,6 +19,11 @@ export async function generateStaticParams() {
       status: 'PUBLISHED',
     },
     select: { slug: true },
+    take: 1000, // Limit to prevent excessive build times
+    orderBy: [
+      { followers: { _count: 'desc' } }, // Popular books first
+      { publishedAt: 'desc' }, // Then recent
+    ],
   });
 
   return books.map((book) => ({
@@ -23,36 +31,148 @@ export async function generateStaticParams() {
   }));
 }
 
-export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }) {
+export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }): Promise<Metadata> {
   const { slug } = await params;
   const book = await prisma.book.findUnique({
-    where: { slug },
-    select: { title: true, synopsis: true, slug: true },
+    where: {
+      slug,
+      visibility: 'PUBLIC',
+      status: 'PUBLISHED',
+    },
+    select: {
+      title: true,
+      synopsis: true,
+      slug: true,
+      publishedAt: true,
+      createdAt: true,
+      status: true,
+      author: {
+        select: {
+          name: true,
+          slug: true,
+        },
+      },
+      _count: {
+        select: {
+          chapters: true,
+          followers: true,
+          favoritedBy: true,
+        },
+      },
+      chapters: {
+        where: { status: 'PUBLISHED' },
+        select: {
+          publishedAt: true,
+          _count: {
+            select: {
+              reads: true,
+              comments: true,
+            },
+          },
+        },
+        take: 1,
+        orderBy: { publishedAt: 'desc' },
+      },
+    },
   });
 
   if (!book) {
-    notFound();
+    return {
+      title: 'Book Not Found',
+      description: 'The requested book could not be found on Wriders.',
+      robots: { index: false, follow: false },
+    };
   }
 
+  const chapterCount = book._count.chapters;
+  const followerCount = book._count.followers;
+  const totalReads = book.chapters.reduce((sum, ch) => sum + ch._count.reads, 0);
+
+  const publishedDate = book.publishedAt || book.createdAt;
+  const lastChapterDate = book.chapters[0]?.publishedAt;
+
+  const description =
+    book.synopsis ||
+    `${book.title} by ${book.author.name} on Wriders. ${chapterCount} ${chapterCount === 1 ? 'chapter' : 'chapters'} available. ${followerCount} followers, ${totalReads} total reads.`;
+
+  const keywords = [
+    book.title,
+    book.author.name,
+    'book',
+    'story',
+    'novel',
+    'fiction',
+    'online book',
+    'free reading',
+    'chapters',
+    'serial',
+    'wriders',
+    'author',
+    'literature',
+  ];
+
   return {
-    title: book.title,
-    description: book.synopsis,
+    title: `${book.title} by ${book.author.name}`,
+    description,
+    keywords,
+    authors: [{ name: book.author.name, url: `${process.env.NEXT_PUBLIC_APP_URL!}/users/${book.author.slug}` }],
+    creator: book.author.name,
+    publisher: 'Wriders',
     openGraph: {
-      title: book.title,
-      description: book.synopsis,
-      url: `https://wriders.com/books/${book.slug}`,
+      type: 'book',
+      title: `${book.title} by ${book.author.name}`,
+      description,
+      url: `${process.env.NEXT_PUBLIC_APP_URL!}/books/${book.slug}`,
       siteName: 'Wriders',
-      images: [],
+      locale: 'en_US',
+      images: [
+        {
+          url: '/wriders-og.png',
+          width: 1200,
+          height: 630,
+          alt: `${book.title} by ${book.author.name} - Read on Wriders`,
+          type: 'image/png',
+        },
+      ],
+      authors: [book.author.name],
+      tags: ['book', 'story', 'novel', 'fiction', 'online reading'],
     },
     twitter: {
       card: 'summary_large_image',
-      title: book.title,
+      title: `${book.title} by ${book.author.name}`,
+      description,
+      images: ['/wriders-og.png'],
+      creator: '@wriders',
+      site: '@wriders',
     },
     alternates: {
-      canonical: `https://wriders.com/books/${book.slug}`,
+      canonical: `${process.env.NEXT_PUBLIC_APP_URL!}/books/${book.slug}`,
     },
     robots: {
       index: true,
+      follow: true,
+      nocache: false,
+      googleBot: {
+        index: true,
+        follow: true,
+        noimageindex: false,
+        'max-video-preview': -1,
+        'max-image-preview': 'large',
+        'max-snippet': -1,
+      },
+    },
+    other: {
+      // Book-specific meta tags
+      'book:author': book.author.name,
+      'book:isbn': '', // Add if you have ISBNs
+      'book:release_date': publishedDate?.toISOString().split('T')[0] || '',
+      'book:tag': 'fiction,novel,story',
+      // Article-like tags for better indexing
+      'article:author': `${process.env.NEXT_PUBLIC_APP_URL!}/users/${book.author.slug}`,
+      'article:published_time': publishedDate?.toISOString() || '',
+      'article:modified_time': lastChapterDate?.toISOString() || publishedDate?.toISOString() || '',
+      'article:section': 'Books',
+      'article:tag': 'book,story,novel,fiction',
     },
   };
 }
@@ -70,13 +190,24 @@ export default async function BookPage({
   const book = await prisma.book.findUnique({
     where: {
       slug,
-      OR: [
-        { authorId: user.id },
-        { visibility: 'PUBLIC', status: 'PUBLISHED' },
-        { visibility: 'PRIVATE', status: 'PUBLISHED', followers: { some: { userId: user.id } } },
-      ],
+      OR: user
+        ? [
+            { authorId: user.id },
+            { visibility: 'PUBLIC', status: 'PUBLISHED' },
+            { visibility: 'PRIVATE', status: 'PUBLISHED', followers: { some: { userId: user.id } } },
+          ]
+        : [
+            { visibility: 'PUBLIC', status: 'PUBLISHED' }, // Only public books for unauthenticated users
+          ],
     },
     include: {
+      _count: {
+        select: {
+          chapters: true,
+          followers: true,
+          favoritedBy: true,
+        },
+      },
       wikiPages: {
         take: 10,
         select: {
@@ -108,21 +239,14 @@ export default async function BookPage({
           },
         },
       },
-      series: {
-        select: {
-          slug: true,
-          title: true,
-          _count: {
-            select: {
-              books: true,
-            },
-          },
-        },
-      },
       chapters: {
-        where: {
-          OR: [{ status: 'PUBLISHED' }, { book: { authorId: user.id } }],
-        },
+        where: user
+          ? {
+              OR: [{ status: 'PUBLISHED' }, { book: { authorId: user.id } }],
+            }
+          : {
+              status: 'PUBLISHED', // Only published chapters for unauthenticated users
+            },
         select: {
           id: true,
           status: true,
@@ -157,10 +281,7 @@ export default async function BookPage({
     notFound();
   }
 
-  const isAuthor = book.authorId === user.id;
-  const isFollowing = book.followers.some((f) => f.user.slug === user.slug);
-  const isFavorited = book.favoritedBy.some((f) => f.user.slug === user.slug);
-
+  const isAuthor = user ? book.authorId === user.id : false;
   const totalReads = book.chapters.reduce((sum, ch) => sum + ch._count.reads, 0);
   const totalComments = book.chapters.reduce((sum, ch) => sum + ch._count.comments, 0);
 
@@ -197,21 +318,24 @@ export default async function BookPage({
             {isAuthor ? (
               <div className='flex flex-col items-center gap-4'>
                 <div className='flex items-center gap-4'>
-                  <FollowBookButton bookSlug={book.slug} />
-                  <FavoriteBookButton bookSlug={book.slug} />
+                  {(book.status === 'PUBLISHED' || book.status === 'SOON') && <FollowBookButton bookSlug={book.slug} />}
+                  {book.status === 'PUBLISHED' && <FavoriteBookButton bookSlug={book.slug} />}
                 </div>
-                <Link
-                  href={`/books/${book.slug}/edit`}
-                  className='text-sm text-gray-600 hover:text-gray-900 transition-colors border-b border-gray-200 hover:border-gray-400 pb-1'
-                >
-                  Edit Book
-                </Link>
+                <div className='flex items-center gap-4'>
+                  <Link
+                    href={`/books/${book.slug}/edit`}
+                    className='text-sm text-gray-600 hover:text-gray-900 transition-colors border-b border-gray-200 hover:border-gray-400 pb-1'
+                  >
+                    Edit Book
+                  </Link>
+                  <DeleteBookButton bookId={book.id} bookTitle={book.title} />
+                </div>
               </div>
             ) : (
               user && (
                 <>
-                  <FollowBookButton bookSlug={book.slug} />
-                  <FavoriteBookButton bookSlug={book.slug} />
+                  {(book.status === 'PUBLISHED' || book.status === 'SOON') && <FollowBookButton bookSlug={book.slug} />}
+                  {book.status === 'PUBLISHED' && <FavoriteBookButton bookSlug={book.slug} />}
                 </>
               )
             )}
@@ -238,42 +362,28 @@ export default async function BookPage({
           </div>
         </div>
 
-        {/* Series Information */}
-        {book.series && (
-          <div className='mb-12 text-center'>
-            <p className='text-sm text-gray-600 mb-2'>Part of series</p>
-            <Link
-              href={`/series/${book.series.slug}`}
-              className='text-lg font-serif text-gray-900 hover:text-gray-700 transition-colors border-b border-gray-200 hover:border-gray-400 pb-1'
-            >
-              {book.series.title}
-            </Link>
-            <p className='text-sm text-gray-500 mt-1'>
-              {book.series._count.books} book{book.series._count.books !== 1 ? 's' : ''} in this series
-            </p>
-          </div>
-        )}
-
         {/* Table of Contents */}
-        <TableOfContents
-          chapters={book.chapters.map((chapter) => ({
-            id: chapter.id,
-            slug: chapter.slug,
-            title: chapter.title,
-            synopsis: chapter.synopsis,
-            order: chapter.order,
-            status: chapter.status,
-            publishedAt: chapter.publishedAt,
-            content: chapter.content,
-            _count: {
-              reads: chapter._count.reads,
-              comments: chapter._count.comments,
-            },
-          }))}
-          bookSlug={book.slug}
-          isAuthor={isAuthor}
-          searchParams={searchParams}
-        />
+        <div className='space-y-6'>
+          <TableOfContents
+            chapters={book.chapters.map((chapter) => ({
+              id: chapter.id,
+              slug: chapter.slug,
+              title: chapter.title,
+              synopsis: chapter.synopsis,
+              order: chapter.order,
+              status: chapter.status,
+              publishedAt: chapter.publishedAt,
+              content: chapter.content,
+              _count: {
+                reads: chapter._count.reads,
+                comments: chapter._count.comments,
+              },
+            }))}
+            bookSlug={book.slug}
+            isAuthor={isAuthor}
+            searchParams={searchParams}
+          />
+        </div>
 
         {/* Additional Information */}
         <div className='mt-16 space-y-8'>
@@ -310,6 +420,9 @@ export default async function BookPage({
           )}
         </div>
       </div>
+
+      {/* Structured Data for SEO */}
+      <BookStructuredData book={book} totalReads={totalReads} totalComments={totalComments} />
     </div>
   );
 }

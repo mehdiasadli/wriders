@@ -48,12 +48,6 @@ export default async function UserFollowingPage({ params }: UserFollowingPagePro
               slug: true,
             },
           },
-          series: {
-            select: {
-              title: true,
-              slug: true,
-            },
-          },
           _count: {
             select: {
               chapters: {
@@ -98,18 +92,6 @@ export default async function UserFollowingPage({ params }: UserFollowingPagePro
                       >
                         {follow.book.author.name}
                       </Link>
-                      {follow.book.series && (
-                        <>
-                          {' '}
-                          • Part of{' '}
-                          <Link
-                            href={`/series/${follow.book.series.slug}`}
-                            className='border-b border-dotted border-gray-400 hover:border-gray-600'
-                          >
-                            {follow.book.series.title}
-                          </Link>
-                        </>
-                      )}
                     </div>
                   </div>
                   <div className='text-right text-sm text-gray-500'>{follow.book._count.chapters} chapters</div>

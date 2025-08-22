@@ -3,7 +3,6 @@
 import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { registerSchema, type RegisterSchema } from '@/schemas/auth.schema';
 
@@ -11,7 +10,6 @@ export function RegisterForm() {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
-  const router = useRouter();
 
   const form = useForm<RegisterSchema>({
     resolver: zodResolver(registerSchema),
@@ -47,10 +45,11 @@ export function RegisterForm() {
       if (!response.ok) {
         setError(result.message || 'Registration failed');
       } else {
-        setSuccess('Account created successfully! Redirecting to login...');
-        setTimeout(() => {
-          router.push('/auth/signin');
-        }, 2000);
+        setSuccess(
+          result.message ||
+            'Account created successfully! Please check your email for a verification link before signing in.'
+        );
+        // Don't auto-redirect, let user verify email first
       }
     } catch (error) {
       console.log(error);
@@ -129,14 +128,26 @@ export function RegisterForm() {
 
         {error && <div className='text-sm text-red-600 p-3 border border-red-200 bg-red-50'>{error}</div>}
 
-        {success && <div className='text-sm text-green-600 p-3 border border-green-200 bg-green-50'>{success}</div>}
+        {success && (
+          <div className='space-y-3'>
+            <div className='text-sm text-green-600 p-3 border border-green-200 bg-green-50'>{success}</div>
+            <div className='text-center'>
+              <Link
+                href={`/auth/resend-verification?email=${encodeURIComponent(form.getValues('email') || '')}`}
+                className='text-sm text-gray-600 hover:text-gray-900 border-b border-dotted border-gray-400 hover:border-gray-600 transition-colors'
+              >
+                Didn&apos;t receive the email? Resend verification link
+              </Link>
+            </div>
+          </div>
+        )}
 
         <button
           type='submit'
-          disabled={isLoading}
+          disabled={isLoading || !!success}
           className='w-full py-3 text-sm font-medium text-gray-900 bg-white border-2 border-gray-900 hover:bg-gray-900 hover:text-white transition-colors disabled:opacity-50 disabled:cursor-not-allowed'
         >
-          {isLoading ? 'Creating account...' : 'Create Account'}
+          {isLoading ? 'Creating account...' : success ? 'Account Created' : 'Create Account'}
         </button>
       </form>
 

@@ -1,10 +1,7 @@
 import { redirect } from 'next/navigation';
 import { prisma } from '@/lib/prisma';
 import { auth } from '@/lib/auth';
-import { formatDistanceToNow } from 'date-fns';
-import { BookOpen, MessageCircle, Eye, Calendar, User, ArrowLeft } from 'lucide-react';
 import Link from 'next/link';
-import { getWordCount } from '@/lib/utils';
 import { Metadata } from 'next';
 import { CommentsSection } from '@/components/comments-section';
 

@@ -13,20 +13,6 @@ export default async function EditBookPage({ params }: { params: Promise<{ slug:
       slug,
       authorId: user.id, // Only author can edit
     },
-    include: {
-      series: {
-        select: {
-          id: true,
-          title: true,
-          books: {
-            select: {
-              orderInSeries: true,
-              title: true,
-            },
-          },
-        },
-      },
-    },
   });
 
   if (!book) {
@@ -44,7 +30,7 @@ export default async function EditBookPage({ params }: { params: Promise<{ slug:
 
           <h1 className='text-6xl font-serif text-gray-900 mt-6 mb-4'>Edit Book</h1>
 
-          <p className='text-sm text-gray-600 mb-8'>Update your book's information and settings</p>
+          <p className='text-sm text-gray-600 mb-8'>Update your book&apos;s information and settings</p>
 
           {/* Current Book Info */}
           <div className='max-w-2xl mx-auto mb-8'>
@@ -53,12 +39,6 @@ export default async function EditBookPage({ params }: { params: Promise<{ slug:
               <span>Status: {book.status}</span>
               <span>•</span>
               <span>Visibility: {book.visibility}</span>
-              {book.series && (
-                <>
-                  <span>•</span>
-                  <span>Series: {book.series.title}</span>
-                </>
-              )}
             </div>
           </div>
         </div>
@@ -73,8 +53,6 @@ export default async function EditBookPage({ params }: { params: Promise<{ slug:
               synopsis: book.synopsis,
               visibility: book.visibility,
               status: book.status,
-              series: book.series,
-              orderInSeries: book.orderInSeries,
             }}
           />
         </div>

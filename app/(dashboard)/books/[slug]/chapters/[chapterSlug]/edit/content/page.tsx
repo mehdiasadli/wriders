@@ -51,7 +51,6 @@ export default async function EditChapterContentPage({ params }: EditChapterCont
             content: chapter.content,
           }}
           bookSlug={chapter.book.slug}
-          bookTitle={chapter.book.title}
         />
       </div>
     </div>

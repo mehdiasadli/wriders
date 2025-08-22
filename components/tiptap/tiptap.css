@@ -1,36 +1,22 @@
 :root {
-  /* Color System */
-  --editor-text-default: hsl(240 10% 3.9%);
-  --editor-text-gray: hsl(240 3.8% 46.1%);
-  --editor-text-brown: hsl(25 95% 53%);
-  --editor-text-orange: hsl(24 95% 53%);
-  --editor-text-yellow: hsl(48 96% 53%);
-  --editor-text-green: hsl(142 71% 45%);
-  --editor-text-blue: hsl(221 83% 53%);
-  --editor-text-purple: hsl(269 97% 85%);
-  --editor-text-pink: hsl(336 80% 58%);
-  --editor-text-red: hsl(0 84% 60%);
+  /* Design System Colors - aligned with your gray scale */
+  --editor-text-default: rgb(17 24 39); /* gray-900 */
+  --editor-text-muted: rgb(107 114 128); /* gray-500 */
+  --editor-text-light: rgb(156 163 175); /* gray-400 */
+  --editor-text-blue: rgb(59 130 246); /* blue-500 for links */
 
   /* Background Colors */
-  --editor-bg-default: hsl(0 0% 100%);
-  --editor-bg-subtle: hsl(0 0% 98%);
-  --editor-bg-muted: hsl(240 5% 96%);
+  --editor-bg-default: rgb(255 255 255); /* white */
+  --editor-bg-subtle: rgb(249 250 251); /* gray-50 */
+  --editor-bg-muted: rgb(243 244 246); /* gray-100 */
 
-  /* Highlight Colors */
-  --editor-highlight-default: hsl(0 0% 98%);
-  --editor-highlight-gray: hsl(240 5% 96%);
-  --editor-highlight-brown: hsl(43 96% 96%);
-  --editor-highlight-orange: hsl(33 100% 96%);
-  --editor-highlight-yellow: hsl(54 100% 96%);
-  --editor-highlight-green: hsl(142 71% 96%);
-  --editor-highlight-blue: hsl(217 91% 96%);
-  --editor-highlight-purple: hsl(269 97% 96%);
-  --editor-highlight-pink: hsl(336 80% 96%);
-  --editor-highlight-red: hsl(0 84% 96%);
+  /* Highlight Colors - simplified, monochrome */
+  --editor-highlight-default: rgb(243 244 246); /* gray-100 */
+  --editor-highlight-blue: rgb(219 234 254); /* blue-100 for selection */
 
   /* Border Colors */
-  --editor-border-default: hsl(240 5% 88%);
-  --editor-border-strong: hsl(240 5% 65%);
+  --editor-border-default: rgb(209 213 219); /* gray-300 */
+  --editor-border-strong: rgb(107 114 128); /* gray-500 */
 
   /* Spacing System */
   --editor-spacing-1: 0.25rem;
@@ -46,7 +32,7 @@
   --editor-font-sans: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial,
     sans-serif;
   --editor-font-mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
-  --editor-font-serif: Georgia, Cambria, 'Times New Roman', Times, serif;
+  --editor-font-serif: 'Times New Roman', Georgia, Cambria, Times, serif;
 
   /* Animation */
   --editor-transition-fast: 150ms cubic-bezier(0.4, 0, 0.2, 1);
@@ -61,34 +47,20 @@
 
 /* Dark Mode Custom Properties */
 .dark {
-  --editor-text-default: hsl(0 0% 98%);
-  --editor-text-gray: hsl(240 5% 64.9%);
-  --editor-text-brown: hsl(25 95% 53%);
-  --editor-text-orange: hsl(24 95% 53%);
-  --editor-text-yellow: hsl(48 96% 53%);
-  --editor-text-green: hsl(142 71% 45%);
-  --editor-text-blue: hsl(221 83% 53%);
-  --editor-text-purple: hsl(269 97% 85%);
-  --editor-text-pink: hsl(336 80% 58%);
-  --editor-text-red: hsl(0 84% 60%);
+  --editor-text-default: rgb(249 250 251); /* gray-50 */
+  --editor-text-muted: rgb(156 163 175); /* gray-400 */
+  --editor-text-light: rgb(107 114 128); /* gray-500 */
+  --editor-text-blue: rgb(96 165 250); /* blue-400 for links */
 
-  --editor-bg-default: hsl(240 10% 3.9%);
-  --editor-bg-subtle: hsl(240 3.7% 15.9%);
-  --editor-bg-muted: hsl(240 5% 26%);
+  --editor-bg-default: rgb(17 24 39); /* gray-900 */
+  --editor-bg-subtle: rgb(31 41 55); /* gray-800 */
+  --editor-bg-muted: rgb(55 65 81); /* gray-700 */
 
-  --editor-highlight-default: hsl(240 3.7% 15.9%);
-  --editor-highlight-gray: hsl(240 5% 26%);
-  --editor-highlight-brown: hsl(43 96% 10%);
-  --editor-highlight-orange: hsl(33 100% 10%);
-  --editor-highlight-yellow: hsl(54 100% 10%);
-  --editor-highlight-green: hsl(142 71% 10%);
-  --editor-highlight-blue: hsl(217 91% 10%);
-  --editor-highlight-purple: hsl(269 97% 10%);
-  --editor-highlight-pink: hsl(336 80% 10%);
-  --editor-highlight-red: hsl(0 84% 10%);
+  --editor-highlight-default: rgb(55 65 81); /* gray-700 */
+  --editor-highlight-blue: rgb(30 58 138); /* blue-800 for selection */
 
-  --editor-border-default: hsl(240 5% 26%);
-  --editor-border-strong: hsl(240 5% 64.9%);
+  --editor-border-default: rgb(75 85 99); /* gray-600 */
+  --editor-border-strong: rgb(156 163 175); /* gray-400 */
 }
 
 /* Core Editor Styles */
@@ -224,11 +196,11 @@
 .ProseMirror blockquote {
   margin: var(--editor-spacing-6) 0;
   padding: var(--editor-spacing-4) var(--editor-spacing-6);
-  border-left: 4px solid var(--editor-border-strong);
+  border-left: 4px solid var(--editor-border-default);
   font-style: italic;
-  color: var(--editor-text-gray);
+  color: var(--editor-text-muted);
   background-color: var(--editor-bg-subtle);
-  border-radius: 0 8px 8px 0;
+  border-radius: 0;
 }
 
 /* Lists */
@@ -329,20 +301,19 @@
   background-color: var(--editor-bg-default);
   border: 1px solid var(--editor-border-default);
   box-shadow: var(--editor-shadow-lg);
-  border-radius: 8px;
+  border-radius: 0;
   padding: var(--editor-spacing-1);
   display: flex;
   gap: var(--editor-spacing-1);
   align-items: center;
   animation: fadeIn var(--editor-transition-normal);
-  backdrop-filter: blur(8px);
 }
 
 .toolbar-button {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  border-radius: 6px;
+  border-radius: 0;
   font-size: 0.875rem;
   font-weight: 500;
   height: 2.25rem;
@@ -356,11 +327,12 @@
 .toolbar-button:hover {
   background-color: var(--editor-bg-subtle);
   color: var(--editor-text-default);
+  border-color: var(--editor-border-default);
 }
 
 .toolbar-button:focus-visible {
   outline: none;
-  box-shadow: 0 0 0 2px var(--editor-border-strong);
+  border-color: var(--editor-border-strong);
 }
 
 .toolbar-button:disabled {
@@ -369,8 +341,9 @@
 }
 
 .toolbar-button.active {
-  background-color: var(--editor-bg-muted);
-  color: var(--editor-text-blue);
+  background-color: var(--editor-bg-default);
+  color: var(--editor-text-default);
+  border-color: var(--editor-border-strong);
 }
 
 /* Placeholder Styles
@@ -431,7 +404,7 @@
 }
 
 .is-editor-empty::before {
-  color: var(--editor-text-gray);
+  color: var(--editor-text-light);
   content: attr(data-placeholder);
   float: left;
   height: 0;

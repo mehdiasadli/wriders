@@ -1,7 +1,6 @@
 import { z } from 'zod';
 import { BookVisibilitySchema, ContentStatusSchema } from './enums.schema';
 import { userSchema } from './users.schema';
-import { seriesSchema } from './series.schema';
 
 export const bookSchema = z.object({
   id: z
@@ -43,15 +42,6 @@ export const bookSchema = z.object({
   visibility: BookVisibilitySchema,
   status: ContentStatusSchema,
   authorId: userSchema.shape.id,
-  seriesId: seriesSchema.shape.id.nullish(),
-  orderInSeries: z
-    .number({
-      required_error: 'Order in series is required',
-      invalid_type_error: 'Order in series must be a number',
-    })
-    .int('Order in series must be an integer')
-    .positive('Order in series must be a positive number')
-    .nullish(),
 });
 
 export const createBookSchema = bookSchema.omit({
@@ -67,7 +57,6 @@ export const createBookSchema = bookSchema.omit({
 export const updateBookSchema = createBookSchema
   .omit({
     title: true,
-    seriesId: true,
   })
   .extend({
     status: bookSchema.shape.status,

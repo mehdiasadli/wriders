@@ -25,7 +25,7 @@ interface CommentData {
   _count: {
     replies: number;
   };
-  replies?: any[];
+  replies?: unknown[];
 }
 
 interface EditCommentProps {
@@ -61,7 +61,6 @@ export function EditComment({ comment, onUpdate, onCancel }: EditCommentProps) {
         throw new Error(error.error || 'Failed to update comment');
       }
 
-      const updatedComment = await response.json();
       toast.success('Comment updated successfully');
       onUpdate();
     } catch (error) {

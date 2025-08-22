@@ -10,7 +10,6 @@ interface FavoriteChapterButtonProps {
 
 export function FavoriteChapterButton({ chapterSlug }: FavoriteChapterButtonProps) {
   const [isFavorited, setIsFavorited] = useState(false);
-  const [favoriteCount, setFavoriteCount] = useState(0);
   const [isLoading, setIsLoading] = useState(false);
 
   // Fetch initial favorite status
@@ -22,7 +21,6 @@ export function FavoriteChapterButton({ chapterSlug }: FavoriteChapterButtonProp
           const data = await response.json();
           if (data.success) {
             setIsFavorited(data.data.favorited);
-            setFavoriteCount(data.data.count);
           }
         }
       } catch (error) {
@@ -46,9 +44,6 @@ export function FavoriteChapterButton({ chapterSlug }: FavoriteChapterButtonProp
       if (data.success) {
         const newFavorited = data.data.favorited;
         setIsFavorited(newFavorited);
-
-        // Update count optimistically
-        setFavoriteCount((prev) => (newFavorited ? prev + 1 : prev - 1));
 
         toast.success(newFavorited ? 'Added to favorites' : 'Removed from favorites');
       } else {

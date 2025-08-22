@@ -1,5 +1,99 @@
 import { prisma } from '@/lib/prisma';
 import { getCurrentUser } from '@/lib/auth-utils';
+import type { Metadata } from 'next';
+
+// Generate static params for active users
+export async function generateStaticParams() {
+  const users = await prisma.user.findMany({
+    where: {
+      OR: [
+        // Authors with published books
+        {
+          booksAuthored: {
+            some: {
+              status: 'PUBLISHED',
+              visibility: 'PUBLIC',
+            },
+          },
+        },
+        // Users with activity (comments, reads, etc.)
+        {
+          comments: {
+            some: {},
+          },
+        },
+      ],
+    },
+    select: { slug: true },
+    take: 100, // Limit to prevent too many static pages
+  });
+
+  return users.map((user) => ({
+    slug: user.slug,
+  }));
+}
+
+// Generate metadata
+export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }): Promise<Metadata> {
+  const { slug } = await params;
+  const user = await prisma.user.findUnique({
+    where: { slug },
+    select: {
+      name: true,
+      slug: true,
+      roles: true,
+      _count: {
+        select: {
+          booksAuthored: {
+            where: {
+              status: 'PUBLISHED',
+              visibility: 'PUBLIC',
+            },
+          },
+        },
+      },
+    },
+  });
+
+  if (!user) {
+    return {
+      title: 'User Not Found',
+      description: 'The requested user profile could not be found.',
+    };
+  }
+
+  const isAuthor = user.roles.includes('AUTHOR');
+  const bookCount = user._count.booksAuthored;
+
+  return {
+    title: `${user.name} - ${isAuthor ? 'Author' : 'Reader'} Profile`,
+    description: `${user.name}'s profile on Wriders. ${
+      isAuthor ? `Author of ${bookCount} ${bookCount === 1 ? 'book' : 'books'}.` : 'Active reader and community member.'
+    } Discover their reading activity and published works.`,
+    keywords: [user.name, 'author profile', 'writer profile', 'user profile', 'books', 'stories'],
+    openGraph: {
+      title: `${user.name} - Profile | Wriders`,
+      description: `${user.name}'s profile on Wriders. ${
+        isAuthor
+          ? `Author of ${bookCount} ${bookCount === 1 ? 'book' : 'books'}.`
+          : 'Active reader and community member.'
+      }`,
+      url: `${process.env.NEXT_PUBLIC_APP_URL!}/users/${user.slug}`,
+      type: 'profile',
+    },
+    twitter: {
+      title: `${user.name} - Profile | Wriders`,
+      description: `${user.name}'s profile on Wriders. ${
+        isAuthor
+          ? `Author of ${bookCount} ${bookCount === 1 ? 'book' : 'books'}.`
+          : 'Active reader and community member.'
+      }`,
+    },
+    alternates: {
+      canonical: `${process.env.NEXT_PUBLIC_APP_URL!}/users/${user.slug}`,
+    },
+  };
+}
 
 interface UserOverviewPageProps {
   params: Promise<{ slug: string }>;

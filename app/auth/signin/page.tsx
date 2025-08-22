@@ -1,5 +1,24 @@
 import { LoginForm } from '@/components/login-form';
 import Link from 'next/link';
+import type { Metadata } from 'next';
+
+export const metadata: Metadata = {
+  title: 'Sign In - Access Your Account',
+  description:
+    'Sign in to your Wriders account to access your books, continue reading, and connect with the writing community.',
+  keywords: ['sign in', 'login', 'account access', 'user login'],
+  robots: {
+    index: false,
+    follow: false,
+  },
+  openGraph: {
+    title: 'Sign In - Access Your Account | Wriders',
+    description:
+      'Sign in to your Wriders account to access your books, continue reading, and connect with the writing community.',
+    url: `${process.env.NEXT_PUBLIC_APP_URL!}/auth/signin`,
+    type: 'website',
+  },
+};
 
 export default function SigninPage() {
   return (

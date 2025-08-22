@@ -17,7 +17,6 @@ export default function WpmTest() {
   const [selectedLanguage, setSelectedLanguage] = useState<Language>('en');
   const [testState, setTestState] = useState<TestState>('select');
   const [startTime, setStartTime] = useState<number | null>(null);
-  const [endTime, setEndTime] = useState<number | null>(null);
   const [elapsedTime, setElapsedTime] = useState(0);
   const [calculatedWPM, setCalculatedWPM] = useState<number | null>(null);
   const [isUpdatingProfile, setIsUpdatingProfile] = useState(false);
@@ -55,7 +54,6 @@ export default function WpmTest() {
   const handleStartTest = () => {
     const now = Date.now();
     setStartTime(now);
-    setEndTime(null);
     setElapsedTime(0);
     setCalculatedWPM(null);
     setTestState('testing');
@@ -63,7 +61,6 @@ export default function WpmTest() {
 
   const handleStopTest = () => {
     const now = Date.now();
-    setEndTime(now);
     setTestState('finished');
 
     if (startTime) {
@@ -104,7 +101,7 @@ export default function WpmTest() {
         const error = await response.json();
         toast.error(error.message || 'Failed to update WPM');
       }
-    } catch (error) {
+    } catch (_error) {
       toast.error('An error occurred while updating your WPM');
     } finally {
       setIsUpdatingProfile(false);
@@ -114,7 +111,6 @@ export default function WpmTest() {
   const handleRetry = () => {
     setTestState('select');
     setStartTime(null);
-    setEndTime(null);
     setElapsedTime(0);
     setCalculatedWPM(null);
   };

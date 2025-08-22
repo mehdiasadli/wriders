@@ -18,12 +18,10 @@ interface EditChapterFormProps {
     publishedAt: Date | null;
   };
   bookSlug: string;
-  bookTitle: string;
-  onSuccess?: () => void;
   className?: string;
 }
 
-export function EditChapterForm({ chapter, bookSlug, bookTitle, onSuccess }: EditChapterFormProps) {
+export function EditChapterForm({ chapter, bookSlug }: EditChapterFormProps) {
   const router = useRouter();
   const [isSubmitting, setIsSubmitting] = useState(false);
 

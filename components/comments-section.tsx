@@ -87,14 +87,14 @@ export function CommentsSection({
   };
 
   // Single handler for all comment operations
-  const handleCommentAction = async (action: 'add' | 'update' | 'delete' | 'reply') => {
+  const handleCommentAction = async () => {
     await refreshComments();
   };
 
   return (
     <div className='space-y-6'>
       {/* Add Comment Form */}
-      {currentUserId && <AddComment chapterSlug={chapterSlug} onCommentAdded={() => handleCommentAction('add')} />}
+      {currentUserId && <AddComment chapterSlug={chapterSlug} onCommentAdded={() => handleCommentAction()} />}
 
       {/* Comments List */}
       <CommentList

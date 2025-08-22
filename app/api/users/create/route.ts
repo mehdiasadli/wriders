@@ -4,6 +4,8 @@ import { createSuccessResponse, createErrorResponse } from '@/lib/api-response';
 import { prisma } from '@/lib/prisma';
 import { slugify } from '@/lib/utils';
 import * as bcrypt from 'bcryptjs';
+import { nanoid } from 'nanoid';
+import { sendVerificationEmail } from '@/lib/mailjet';
 
 export async function POST(request: NextRequest) {
   try {
@@ -30,13 +32,48 @@ export async function POST(request: NextRequest) {
       },
     });
 
-    // Remove password from response
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    const { password, ...userWithoutPassword } = user;
-
-    return NextResponse.json(createSuccessResponse(userWithoutPassword, 'User created successfully', 201), {
-      status: 201,
+    // generate email verification token
+    const emailVerificationToken = await prisma.emailVerificationToken.create({
+      data: {
+        userId: user.id,
+        token: nanoid(32),
+        expiresAt: new Date(Date.now() + 1000 * 60 * 60 * 24), // 1 day
+      },
     });
+
+    // send verification email
+    const emailResult = await sendVerificationEmail(
+      user.email,
+      emailVerificationToken.token,
+      emailVerificationToken.expiresAt,
+      user.name
+    );
+
+    if (!emailResult.success) {
+      console.error('Error sending verification email:', emailResult.message);
+      // remove the user
+      await prisma.user.delete({
+        where: { id: user.id },
+      });
+
+      return NextResponse.json(createErrorResponse('Failed to create user. Please try to register again.', 500), {
+        status: 500,
+      });
+    }
+
+    // Remove password from response
+    const { password: _password, ...userWithoutPassword } = user;
+
+    return NextResponse.json(
+      createSuccessResponse(
+        userWithoutPassword,
+        'User created successfully. Please check your email address (and spam folder) for a verification email.',
+        201
+      ),
+      {
+        status: 201,
+      }
+    );
   } catch (error) {
     console.error('Error creating user:', error);
 

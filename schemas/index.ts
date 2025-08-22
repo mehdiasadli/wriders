@@ -3,7 +3,6 @@ export * from './enums.schema';
 
 // Main entities
 export * from './users.schema';
-export * from './series.schema';
 export * from './books.schema';
 export * from './chapters.schema';
 export * from './characters.schema';

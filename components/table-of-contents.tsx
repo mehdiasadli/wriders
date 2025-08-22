@@ -1,4 +1,4 @@
-import { BookOpen, Clock, Eye, MessageCircle, Calendar, BarChart3 } from 'lucide-react';
+import { BookOpen } from 'lucide-react';
 import Link from 'next/link';
 import { formatDistanceToNow } from 'date-fns';
 
@@ -123,14 +123,25 @@ export async function TableOfContents({ chapters, bookSlug, isAuthor, searchPara
           {publishedChapters.length} chapter{publishedChapters.length !== 1 ? 's' : ''} published
         </p>
 
-        {isAuthor && (
-          <Link
-            href={`/books/${bookSlug}/chapters/create`}
-            className='text-sm text-gray-600 hover:text-gray-900 transition-colors border-b border-gray-200 hover:border-gray-400 pb-1'
-          >
-            Write New Chapter
-          </Link>
-        )}
+        <div className='flex items-center justify-center gap-4'>
+          {isAuthor && (
+            <Link
+              href={`/books/${bookSlug}/chapters/create`}
+              className='text-sm text-gray-600 hover:text-gray-900 transition-colors border-b border-gray-200 hover:border-gray-400 pb-1'
+            >
+              Write New Chapter
+            </Link>
+          )}
+
+          {isAuthor && chapters.length > 1 && (
+            <Link
+              href={`/books/${bookSlug}/reorder-chapters`}
+              className='text-sm text-gray-600 hover:text-gray-900 transition-colors border-b border-gray-200 hover:border-gray-400 pb-1'
+            >
+              Reorder Chapters
+            </Link>
+          )}
+        </div>
       </div>
 
       {/* Ordering Controls */}

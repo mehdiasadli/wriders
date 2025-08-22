@@ -6,13 +6,11 @@ import { toast } from 'sonner';
 
 interface MarkAsReadButtonProps {
   chapterSlug: string;
-  initialReadCount: number;
 }
 
-export function MarkAsReadButton({ chapterSlug, initialReadCount }: MarkAsReadButtonProps) {
+export function MarkAsReadButton({ chapterSlug }: MarkAsReadButtonProps) {
   const [hasRead, setHasRead] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
-  const [readCount, setReadCount] = useState(initialReadCount);
 
   // Check initial read status
   useEffect(() => {
@@ -43,9 +41,7 @@ export function MarkAsReadButton({ chapterSlug, initialReadCount }: MarkAsReadBu
         throw new Error(error.error || 'Failed to mark as read');
       }
 
-      const data = await response.json();
       setHasRead(true);
-      setReadCount(data.readCount);
       toast.success('Chapter marked as read!');
     } catch (error) {
       console.error('Error marking as read:', error);

@@ -9,7 +9,7 @@ import Link from '@tiptap/extension-link';
 import Subscript from '@tiptap/extension-subscript';
 import Superscript from '@tiptap/extension-superscript';
 import TextAlign from '@tiptap/extension-text-align';
-import { TextStyle, FontFamily } from '@tiptap/extension-text-style';
+import { TextStyle } from '@tiptap/extension-text-style';
 import Typography from '@tiptap/extension-typography';
 import Underline from '@tiptap/extension-underline';
 import { EditorContent, EditorEvents, type Extension, useEditor } from '@tiptap/react';

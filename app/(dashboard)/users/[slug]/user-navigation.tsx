@@ -12,11 +12,10 @@ interface NavigationItem {
 }
 
 interface UserNavigationProps {
-  slug: string;
   navigationItems: NavigationItem[];
 }
 
-export function UserNavigation({ slug, navigationItems }: UserNavigationProps) {
+export function UserNavigation({ navigationItems }: UserNavigationProps) {
   const pathname = usePathname();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 

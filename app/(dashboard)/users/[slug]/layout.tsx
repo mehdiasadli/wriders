@@ -134,7 +134,7 @@ export default async function UserLayout({ children, params }: UserLayoutProps) 
       </div>
 
       {/* Navigation Tabs */}
-      <UserNavigation slug={slug} navigationItems={navigationItems} />
+      <UserNavigation navigationItems={navigationItems} />
 
       {/* Content */}
       <div className='max-w-4xl mx-auto px-4 sm:px-6 py-8'>{children}</div>

@@ -31,6 +31,10 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
             return null;
           }
 
+          if (!user.isVerified) {
+            return null;
+          }
+
           return {
             id: user.id,
             email: user.email,
