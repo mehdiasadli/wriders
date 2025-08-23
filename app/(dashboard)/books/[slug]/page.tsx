@@ -129,7 +129,7 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
       locale: 'en_US',
       images: [
         {
-          url: '/wriders-og.png',
+          url: `${process.env.NEXT_PUBLIC_APP_URL!}/api/og?type=book&title=${encodeURIComponent(book.title)}&author=${encodeURIComponent(book.author.name)}`,
           width: 1200,
           height: 630,
           alt: `${book.title} by ${book.author.name} - Read on Wriders`,
@@ -143,7 +143,9 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
       card: 'summary_large_image',
       title: `${book.title} by ${book.author.name}`,
       description,
-      images: ['/wriders-og.png'],
+      images: [
+        `${process.env.NEXT_PUBLIC_APP_URL!}/api/og?type=book&title=${encodeURIComponent(book.title)}&author=${encodeURIComponent(book.author.name)}`,
+      ],
       creator: '@wriders',
       site: '@wriders',
     },

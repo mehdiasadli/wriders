@@ -1,61 +1,119 @@
-/* eslint-disable @next/next/no-img-element */
 import { ImageResponse } from 'next/og';
-// App router includes @vercel/og.
-// No need to install it.
 
 export async function GET(request: Request) {
   try {
     const { searchParams } = new URL(request.url);
 
-    // ?title=<title>
-    const hasTitle = searchParams.has('title');
-    const title = hasTitle ? searchParams.get('title')?.slice(0, 100) : 'My default title';
+    const title = searchParams.get('title') || 'Wriders';
+    const author = searchParams.get('author') || '';
+    const bookTitle = searchParams.get('book') || '';
+    const chapterNumber = searchParams.get('chapter') || '';
+    const type = searchParams.get('type') || 'default'; // 'chapter', 'book', 'default'
 
     return new ImageResponse(
       (
         <div
           style={{
-            backgroundColor: 'black',
-            backgroundSize: '150px 150px',
+            background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
             height: '100%',
             width: '100%',
             display: 'flex',
-            textAlign: 'center',
+            flexDirection: 'column',
             alignItems: 'center',
             justifyContent: 'center',
-            flexDirection: 'column',
-            flexWrap: 'nowrap',
+            padding: '40px',
+            fontFamily: 'system-ui',
           }}
         >
+          {/* Logo/Brand */}
           <div
             style={{
               display: 'flex',
               alignItems: 'center',
-              justifyContent: 'center',
-              justifyItems: 'center',
+              marginBottom: '40px',
             }}
           >
-            <img
-              alt='Vercel'
-              height={200}
-              src="data:image/svg+xml,%3Csvg width='116' height='100' fill='white' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M57.5 0L115 100H0L57.5 0z' /%3E%3C/svg%3E"
-              style={{ margin: '0 30px' }}
-              width={232}
-            />
+            <div
+              style={{
+                fontSize: '32px',
+                fontWeight: 'bold',
+                color: 'white',
+                letterSpacing: '2px',
+              }}
+            >
+              WRIDERS
+            </div>
           </div>
+
+          {/* Content */}
           <div
             style={{
-              fontSize: 60,
-              fontStyle: 'normal',
-              letterSpacing: '-0.025em',
-              color: 'white',
-              marginTop: 30,
-              padding: '0 120px',
-              lineHeight: 1.4,
-              whiteSpace: 'pre-wrap',
+              display: 'flex',
+              flexDirection: 'column',
+              alignItems: 'center',
+              textAlign: 'center',
+              maxWidth: '900px',
             }}
           >
-            {title}
+            {type === 'chapter' && chapterNumber && (
+              <div
+                style={{
+                  fontSize: '24px',
+                  color: 'rgba(255,255,255,0.8)',
+                  marginBottom: '20px',
+                }}
+              >
+                Chapter {chapterNumber}
+              </div>
+            )}
+
+            <div
+              style={{
+                fontSize: type === 'chapter' ? '48px' : '56px',
+                fontWeight: 'bold',
+                color: 'white',
+                lineHeight: 1.2,
+                marginBottom: '30px',
+                textAlign: 'center',
+              }}
+            >
+              {title}
+            </div>
+
+            {bookTitle && type === 'chapter' && (
+              <div
+                style={{
+                  fontSize: '36px',
+                  color: 'rgba(255,255,255,0.9)',
+                  marginBottom: '20px',
+                }}
+              >
+                {bookTitle}
+              </div>
+            )}
+
+            {author && (
+              <div
+                style={{
+                  fontSize: '28px',
+                  color: 'rgba(255,255,255,0.8)',
+                }}
+              >
+                by {author}
+              </div>
+            )}
+          </div>
+
+          {/* Footer */}
+          <div
+            style={{
+              position: 'absolute',
+              bottom: '40px',
+              fontSize: '20px',
+              color: 'rgba(255,255,255,0.6)',
+            }}
+          >
+            Read on Wriders
           </div>
         </div>
       ),
@@ -65,12 +123,7 @@ export async function GET(request: Request) {
       }
     );
   } catch (e: unknown) {
-    if (e instanceof Error) {
-      console.log(`${e.message}`);
-    } else {
-      console.log(`Unknown error: ${e}`);
-    }
-
+    console.log(`Error generating OG image: ${e}`);
     return new Response(`Failed to generate the image`, {
       status: 500,
     });

@@ -151,7 +151,7 @@ export async function generateMetadata({
       locale: 'en_US',
       images: [
         {
-          url: '/wriders-og.png',
+          url: `${process.env.NEXT_PUBLIC_APP_URL!}/api/og?type=chapter&title=${encodeURIComponent(chapter.title)}&book=${encodeURIComponent(chapter.book.title)}&author=${encodeURIComponent(chapter.book.author.name)}&chapter=${chapter.order}`,
           width: 1200,
           height: 630,
           alt: `${chapter.title} - Chapter ${chapter.order} of ${chapter.book.title} by ${chapter.book.author.name}`,
@@ -168,7 +168,9 @@ export async function generateMetadata({
       card: 'summary_large_image',
       title: `${chapter.title} - ${chapter.book.title}`,
       description,
-      images: ['/wriders-og.png'],
+      images: [
+        `${process.env.NEXT_PUBLIC_APP_URL!}/api/og?type=chapter&title=${encodeURIComponent(chapter.title)}&book=${encodeURIComponent(chapter.book.title)}&author=${encodeURIComponent(chapter.book.author.name)}&chapter=${chapter.order}`,
+      ],
       creator: '@wriders',
       site: '@wriders',
     },
