@@ -187,7 +187,12 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
         preferCSSPageSize: true,
       });
 
-      return new NextResponse(Buffer.from(pdf), {
+      // Create a proper ArrayBuffer from the Uint8Array
+      const buffer = new ArrayBuffer(pdf.length);
+      const view = new Uint8Array(buffer);
+      view.set(pdf);
+
+      return new Response(buffer, {
         headers: {
           'Content-Type': 'application/pdf',
           'Content-Disposition': `attachment; filename="${chapter.title.replace(/[^a-z0-9]/gi, '_').toLowerCase()}.pdf"`,
